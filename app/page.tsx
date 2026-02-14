@@ -107,7 +107,7 @@ export default function Home() {
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-36 h-36 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-white/80"
+              className="w-36 h-36 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
             />
           </a>
           <div className="text-center">
@@ -127,7 +127,7 @@ export default function Home() {
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-44 h-44 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-white/80"
+              className="w-44 h-44 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
             />
           </a>
           <div className="pb-2">
