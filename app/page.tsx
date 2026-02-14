@@ -244,7 +244,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={!hasFoodMenu}
-                className="inline-flex items-center gap-2 rounded-xl bg-wine px-8 py-3 text-base font-medium text-white shadow-lg shadow-wine/25 transition-all hover:bg-wine-light hover:shadow-xl hover:shadow-wine/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 rounded-xl bg-wine px-10 py-4 text-lg font-bold text-white shadow-lg shadow-wine/30 border-2 border-white/20 transition-all cursor-pointer hover:bg-wine-light hover:shadow-xl hover:shadow-wine/40 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <svg
                   className="w-5 h-5"
