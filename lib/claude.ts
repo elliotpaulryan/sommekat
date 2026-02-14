@@ -183,7 +183,7 @@ export async function getWinePairings(
     );
     prompt += WINE_MENU_ADDENDUM;
     if (wineMenu.minPrice != null && wineMenu.maxPrice != null) {
-      prompt += `\n\nThe user has set a preferred price range of ${wineMenu.minPrice} to ${wineMenu.maxPrice} ${currency}. Prefer wines within this range. If the best pairing is outside this range, still recommend it but set "outsidePriceRange" to true. If the wine is within the range, set "outsidePriceRange" to false.`;
+      prompt += `\n\nThe user has set a preferred price range of ${wineMenu.minPrice} to ${wineMenu.maxPrice} ${currency}. You MUST ONLY recommend wines within this price range. Filter the wine list to only wines priced between these values. For each dish, pick the best pairing from wines within the range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu within this price range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
     }
   } else if (wineMenu?.wineMenuUrl) {
     const wineBlock = await fetchUrlAsContentBlock(wineMenu.wineMenuUrl);
@@ -193,7 +193,7 @@ export async function getWinePairings(
     );
     prompt += WINE_MENU_ADDENDUM;
     if (wineMenu.minPrice != null && wineMenu.maxPrice != null) {
-      prompt += `\n\nThe user has set a preferred price range of ${wineMenu.minPrice} to ${wineMenu.maxPrice} ${currency}. Prefer wines within this range. If the best pairing is outside this range, still recommend it but set "outsidePriceRange" to true. If the wine is within the range, set "outsidePriceRange" to false.`;
+      prompt += `\n\nThe user has set a preferred price range of ${wineMenu.minPrice} to ${wineMenu.maxPrice} ${currency}. You MUST ONLY recommend wines within this price range. Filter the wine list to only wines priced between these values. For each dish, pick the best pairing from wines within the range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu within this price range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
     }
   }
 
@@ -236,7 +236,7 @@ export async function getWinePairingsFromUrl(
     );
     prompt += WINE_MENU_ADDENDUM;
     if (minPrice != null && maxPrice != null) {
-      prompt += `\n\nThe user has set a preferred price range of ${minPrice} to ${maxPrice} ${currency || "USD"}. Prefer wines within this range. If the best pairing is outside this range, still recommend it but set "outsidePriceRange" to true. If the wine is within the range, set "outsidePriceRange" to false.`;
+      prompt += `\n\nThe user has set a preferred price range of ${minPrice} to ${maxPrice} ${currency || "USD"}. You MUST ONLY recommend wines within this price range. Filter the wine list to only wines priced between these values. For each dish, pick the best pairing from wines within the range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu within this price range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
     }
   }
 
