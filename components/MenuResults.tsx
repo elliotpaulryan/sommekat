@@ -110,7 +110,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                   <h3 className="text-xl font-bold text-stone-900">
                     {pairing.bottleSuggestion}
                   </h3>
-                  {pairing.restaurantPrice && (
+                  {(pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-wine text-white px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide">
                       On Menu
                     </span>
@@ -136,8 +136,8 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                 </div>
 
                 {/* Badges row — only show when a specific bottle is recommended (wine list uploaded) */}
-                {(pairing.vivinoRating != null || pairing.restaurantPrice || pairing.retailPrice) && (
-                  <div className="mt-3 grid grid-cols-3 gap-2">
+                {(pairing.vivinoRating != null || pairing.restaurantPriceGlass || pairing.restaurantPriceBottle || pairing.retailPrice) && (
+                  <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <a
                       href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([pairing.producer, pairing.bottleSuggestion].filter(Boolean).join(" "))}`}
                       target="_blank"
@@ -150,9 +150,15 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                       </p>
                     </a>
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-center">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Restaurant</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Glass</p>
                       <p className="text-base font-bold text-blue-900 mt-0.5">
-                        {pairing.restaurantPrice || "—"}
+                        {pairing.restaurantPriceGlass || "—"}
+                      </p>
+                    </div>
+                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Bottle</p>
+                      <p className="text-base font-bold text-blue-900 mt-0.5">
+                        {pairing.restaurantPriceBottle || "—"}
                       </p>
                     </div>
                     <div className="rounded-lg bg-green-50 border border-green-200 p-2 text-center">

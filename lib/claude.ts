@@ -12,7 +12,8 @@ export interface WinePairing {
   vivinoRating: number | null;
   robertParkerScore: number | null;
   retailPrice: string | null;
-  restaurantPrice: string | null;
+  restaurantPriceGlass: string | null;
+  restaurantPriceBottle: string | null;
   outsidePriceRange: boolean;
 }
 
@@ -44,7 +45,8 @@ Return your response as a JSON array with this exact structure (no markdown, no 
     "vivinoRating": null,
     "robertParkerScore": null,
     "retailPrice": null,
-    "restaurantPrice": null,
+    "restaurantPriceGlass": null,
+    "restaurantPriceBottle": null,
     "outsidePriceRange": false
   }
 ]
@@ -59,7 +61,8 @@ Additional rules:
 - vivinoRating: The Vivino community rating for the recommended wine (a number from 1.0 to 5.0, e.g. 4.2). Vivino is the world's largest wine rating platform. Use your best knowledge to estimate the rating. Only include if a specific bottle is recommended (i.e. when a wine menu is provided). Otherwise set to null.
 - robertParkerScore: The Robert Parker / Wine Advocate score for the recommended wine (integer out of 100, e.g. 92). Only include if you are confident the wine has been rated. Set to null otherwise.
 - retailPrice: Only include if a specific bottle is recommended. Otherwise set to null.
-- restaurantPrice: The price listed on the restaurant's wine menu for this bottle, if a wine menu was provided. Include the currency symbol of the restaurant's local currency (e.g. "$45", "£32", "€28"). Set to null otherwise.`;
+- restaurantPriceGlass: The per-glass price listed on the restaurant's wine menu, if available. Include the currency symbol (e.g. "$12", "£8", "€10"). Set to null if no glass price is listed or no wine menu was provided.
+- restaurantPriceBottle: The per-bottle price listed on the restaurant's wine menu, if available. Include the currency symbol (e.g. "$45", "£32", "€28"). Set to null if no bottle price is listed or no wine menu was provided.`;
 
 const WINE_MENU_ADDENDUM = `
 
