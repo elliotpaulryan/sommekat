@@ -22,7 +22,6 @@ export default function MenuUpload({
   const [preview, setPreview] = useState<string | null>(null);
   const [menuUrl, setMenuUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
     (file: File) => {
@@ -175,32 +174,13 @@ export default function MenuUpload({
                 <p className="mt-1 text-xs text-stone-500">
                   JPG, PNG, WebP, GIF, or PDF
                 </p>
+                <p className="mt-1 text-xs text-wine font-medium">
+                  or click here to take a photo
+                </p>
               </div>
             </div>
           )}
         </div>
-
-        {/* Camera button */}
-        <input
-          ref={cameraRef}
-          type="file"
-          accept="image/*"
-          capture
-          onChange={handleChange}
-          className="hidden"
-        />
-        <button
-          type="button"
-          onClick={() => cameraRef.current?.click()}
-          disabled={isUploading}
-          className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl border border-burgundy-300/40 bg-cream px-4 py-2.5 text-sm font-medium text-stone-700 transition-all hover:bg-burgundy-50/50 hover:border-wine-light"
-        >
-          <svg className="w-5 h-5 text-wine" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Take a Photo
-        </button>
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-3">
