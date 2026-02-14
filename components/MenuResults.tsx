@@ -83,6 +83,12 @@ function getWineColor(wineType: string): string {
   return "bg-amber-100 border-amber-400 text-amber-900";
 }
 
+function formatPrice(price: string | null): string {
+  if (!price) return "—";
+  // If it has a decimal with only one digit (e.g. $27.5), pad to two decimals
+  return price.replace(/(\d+\.\d)(?!\d)/, "$10");
+}
+
 export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
   return (
     <div className="w-full max-w-5xl mx-auto">
@@ -189,14 +195,14 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                         <div className="flex-1 bg-sky-50 p-2 text-center">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Glass</p>
                           <p className="text-base font-bold text-sky-900 mt-0.5">
-                            {pairing.restaurantPriceGlass}
+                            {formatPrice(pairing.restaurantPriceGlass)}
                           </p>
                         </div>
                         <div className="w-px bg-blue-200" />
                         <div className="flex-1 bg-blue-50 p-2 text-center">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Bottle</p>
                           <p className="text-base font-bold text-blue-900 mt-0.5">
-                            {pairing.restaurantPriceBottle || "—"}
+                            {formatPrice(pairing.restaurantPriceBottle)}
                           </p>
                         </div>
                       </div>
@@ -204,14 +210,14 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                       <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-center">
                         <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Bottle</p>
                         <p className="text-base font-bold text-blue-900 mt-0.5">
-                          {pairing.restaurantPriceBottle || "—"}
+                          {formatPrice(pairing.restaurantPriceBottle)}
                         </p>
                       </div>
                     )}
                     <div className="rounded-lg bg-green-50 border border-green-200 p-2 text-center">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-green-700">Retail</p>
                       <p className="text-base font-bold text-green-900 mt-0.5">
-                        {pairing.retailPrice || "—"}
+                        {formatPrice(pairing.retailPrice)}
                       </p>
                     </div>
                   </div>
