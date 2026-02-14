@@ -101,21 +101,42 @@ export default function Home() {
     <main className="min-h-screen">
       {/* Header with logo */}
       <header className="relative border-b border-wine-dark bg-wine-dark">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-end gap-5">
+        {/* Mobile: stacked centered layout */}
+        <div className="flex flex-col items-center gap-3 px-6 py-6 sm:hidden">
           <a href="/">
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-32 h-32 sm:w-44 sm:h-44 object-contain relative z-10 -mb-10 sm:-mb-14 drop-shadow-xl rounded-full cursor-pointer"
+              className="w-36 h-36 object-contain drop-shadow-xl rounded-full cursor-pointer"
+            />
+          </a>
+          <div className="text-center">
+            <a href="/" className="no-underline">
+              <h1 className="text-5xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(0,0,0,0.3)", letterSpacing: "0.02em" }}>
+                SommeKat
+              </h1>
+            </a>
+            <p className="mt-1 text-sm text-white/60 tracking-widest uppercase">
+              AI-powered wine pairing
+            </p>
+          </div>
+        </div>
+        {/* Desktop: side-by-side layout */}
+        <div className="hidden sm:flex mx-auto max-w-5xl px-6 py-4 items-end gap-5">
+          <a href="/">
+            <img
+              src="/logo.png"
+              alt="SommeKat logo"
+              className="w-44 h-44 object-contain relative z-10 -mb-14 drop-shadow-xl rounded-full cursor-pointer"
             />
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-6xl sm:text-8xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(0,0,0,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-8xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(0,0,0,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
-            <p className="mt-1 text-sm sm:text-base text-white/60 tracking-widest uppercase">
+            <p className="mt-1 text-base text-white/60 tracking-widest uppercase">
               AI-powered wine pairing
             </p>
           </div>

@@ -185,7 +185,7 @@ export default function MenuUpload({
           ref={cameraRef}
           type="file"
           accept="image/*"
-          capture="environment"
+          capture
           onChange={handleChange}
           className="hidden"
         />
