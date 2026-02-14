@@ -66,15 +66,15 @@ Additional rules:
 
 const WINE_MENU_ADDENDUM = `
 
-A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the bottleSuggestion field, use the exact wine name and producer as listed on the wine menu. Include the restaurantPrice from the wine menu. Include the vivinoRating (1.0-5.0), robertParkerScore (out of 100), and retailPrice for the specific bottle if you know them.`;
+A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the bottleSuggestion field, use the exact wine name and producer as listed on the wine menu. Include restaurantPriceGlass and restaurantPriceBottle from the wine menu if listed. Include the vivinoRating (1.0-5.0), robertParkerScore (out of 100), and retailPrice for the specific bottle if you know them.`;
 
 function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | undefined, currency: string): string {
   if (minPrice == null && maxPrice == null) return "";
   if (minPrice != null && maxPrice != null) {
-    return `\n\nThe user has set a preferred price range of ${minPrice} to ${maxPrice} ${currency}. You MUST ONLY recommend wines within this price range. Filter the wine list to only wines priced between these values. For each dish, pick the best pairing from wines within the range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu within this price range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
+    return `\n\nThe user has set a preferred BOTTLE price range of ${minPrice} to ${maxPrice} ${currency}. You MUST ONLY recommend wines whose BOTTLE price falls within this range. Filter the wine list by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price within the range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price within this range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
   }
   if (minPrice != null) {
-    return `\n\nThe user has set a minimum price of ${minPrice} ${currency} with no upper limit. You MUST ONLY recommend wines priced at or above ${minPrice} ${currency}. For each dish, pick the best pairing from wines at or above this price and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu at or above this price for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
+    return `\n\nThe user has set a minimum BOTTLE price of ${minPrice} ${currency} with no upper limit. You MUST ONLY recommend wines whose BOTTLE price is at or above ${minPrice} ${currency}. Filter by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price at or above this value and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price at or above this value for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
   }
   return "";
 }

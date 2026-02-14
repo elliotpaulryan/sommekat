@@ -191,7 +191,7 @@ export default function Home() {
             {/* Price range slider — only when wine menu is provided */}
             {hasWineMenu && (
               <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
-                <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range</p>
+                <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range (Bottle)</p>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-semibold text-white min-w-[45px]">{currencySymbol}{minPrice}</span>
                   <div className="flex-1 relative h-8">
