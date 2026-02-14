@@ -81,7 +81,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
         </button>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 rounded-3xl bg-wine-dark/60 p-4 sm:p-6">
         {pairings.map((pairing, index) => (
           <div
             key={index}
