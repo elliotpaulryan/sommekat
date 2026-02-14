@@ -100,7 +100,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Header with logo */}
-      <header className="relative pt-8 sm:pt-12">
+      <header className="relative pt-8 sm:pt-6">
         {/* Mobile: stacked centered layout */}
         <div className="flex flex-col items-center gap-3 px-6 py-6 sm:hidden">
           <a href="/">
@@ -127,12 +127,12 @@ export default function Home() {
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-44 h-44 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
+              className="w-32 h-32 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
             />
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-8xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-7xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
@@ -143,10 +143,10 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-6 pt-20 sm:pt-24 pb-12">
+      <div className="mx-auto max-w-5xl px-6 pt-12 sm:pt-10 pb-6">
         {/* Tagline — only show on idle/error */}
         {(state === "idle" || state === "error") && (
-          <div className="text-center mb-12">
+          <div className="text-center mb-6">
             <p className="text-lg text-red-900 font-semibold max-w-lg mx-auto leading-relaxed">
               Upload a photo or PDF of any restaurant menu and SommeKat
               will recommend the ideal wine pairing for each item.
