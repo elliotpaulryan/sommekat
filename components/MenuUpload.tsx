@@ -10,6 +10,44 @@ interface MenuUploadProps {
   isUploading: boolean;
 }
 
+const MAX_IMAGE_SIZE = 3.5 * 1024 * 1024; // 3.5MB to stay well under Claude's 5MB base64 limit
+
+function compressImage(file: File): Promise<File> {
+  return new Promise((resolve) => {
+    if (!file.type.startsWith("image/") || file.type === "image/gif") {
+      resolve(file);
+      return;
+    }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      if (file.size <= MAX_IMAGE_SIZE) {
+        resolve(file);
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      const scale = Math.min(1, Math.sqrt(MAX_IMAGE_SIZE / file.size));
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(new File([blob], file.name, { type: "image/jpeg" }));
+          } else {
+            resolve(file);
+          }
+        },
+        "image/jpeg",
+        0.8
+      );
+    };
+    img.src = url;
+  });
+}
+
 export default function MenuUpload({
   label,
   sublabel,
@@ -24,13 +62,14 @@ export default function MenuUpload({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
-    (file: File) => {
-      setSelectedFile(file);
-      onFileChange(file);
+    async (file: File) => {
+      const compressed = await compressImage(file);
+      setSelectedFile(compressed);
+      onFileChange(compressed);
       setMenuUrl("");
       onUrlChange("");
-      if (file.type.startsWith("image/")) {
-        setPreview(URL.createObjectURL(file));
+      if (compressed.type.startsWith("image/")) {
+        setPreview(URL.createObjectURL(compressed));
       } else {
         setPreview(null);
       }
@@ -171,11 +210,11 @@ export default function MenuUpload({
                 <p className="text-base font-medium text-stone-700">
                   {sublabel}
                 </p>
+                <p className="mt-1 text-xs text-wine font-medium">
+                  or click to take a photo
+                </p>
                 <p className="mt-1 text-xs text-stone-500">
                   JPG, PNG, WebP, GIF, or PDF
-                </p>
-                <p className="mt-1 text-xs text-wine font-medium">
-                  or click here to take a photo
                 </p>
               </div>
             </div>
