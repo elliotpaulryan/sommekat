@@ -136,7 +136,7 @@ export default function Home() {
               <img
                 src="/Gemini_Generated_Image_eio0oieio0oieio0.png"
                 alt="SommeKat"
-                className="h-28 object-contain cursor-pointer mix-blend-multiply"
+                className="h-[336px] object-contain cursor-pointer mix-blend-multiply"
               />
             </a>
             <p className="mt-1 text-sm text-red-900/80 tracking-widest uppercase font-bold">
@@ -158,7 +158,7 @@ export default function Home() {
               <img
                 src="/Gemini_Generated_Image_eio0oieio0oieio0.png"
                 alt="SommeKat"
-                className="h-32 object-contain cursor-pointer mix-blend-multiply"
+                className="h-96 object-contain cursor-pointer mix-blend-multiply"
               />
             </a>
             <p className="mt-1 text-base text-red-900/80 tracking-widest uppercase font-bold">
