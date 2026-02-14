@@ -29,6 +29,7 @@ body {
 
 @media (max-width: 639px) {
   body {
+    background-image: url('/mobile-bg.png');
     background-size: auto;
     background-repeat: repeat;
     background-position: center top;
