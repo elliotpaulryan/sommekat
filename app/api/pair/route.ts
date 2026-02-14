@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Handle URL submission (JSON body)
     if (contentType.includes("application/json")) {
-      const { url, wineUrl, currency } = await request.json();
+      const { url, wineUrl, currency, minPrice, maxPrice } = await request.json();
 
       if (!url || typeof url !== "string") {
         return NextResponse.json({ error: "No URL provided" }, { status: 400 });
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const pairings = await getWinePairingsFromUrl(url, wineUrl || undefined, currency || "USD");
+      const pairings = await getWinePairingsFromUrl(url, wineUrl || undefined, currency || "USD", minPrice, maxPrice);
       return NextResponse.json({ pairings });
     }
 
@@ -99,12 +99,16 @@ export async function POST(request: NextRequest) {
     }
 
     const currencyField = formData.get("currency") as string | null;
+    const minPriceField = formData.get("minPrice") as string | null;
+    const maxPriceField = formData.get("maxPrice") as string | null;
 
     const pairings = await getWinePairings(base64, file.type, {
       wineMenuBase64: wineBase64,
       wineMenuMimeType: wineMimeType,
       wineMenuUrl: wineUrlValue,
       currency: currencyField || "USD",
+      minPrice: minPriceField ? Number(minPriceField) : undefined,
+      maxPrice: maxPriceField ? Number(maxPriceField) : undefined,
     });
 
     return NextResponse.json({ pairings });

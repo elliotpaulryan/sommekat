@@ -17,8 +17,11 @@ export default function Home() {
   const [foodUrl, setFoodUrl] = useState("");
   const [wineFile, setWineFile] = useState<File | null>(null);
   const [wineUrl, setWineUrl] = useState("");
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(200);
 
   const hasFoodMenu = !!foodFile || !!foodUrl.trim();
+  const hasWineMenu = !!wineFile || !!wineUrl.trim();
 
   const handleSubmit = async () => {
     setState("uploading");
@@ -56,6 +59,10 @@ export default function Home() {
         formData.append("currency", userCurrency);
         if (wineFile) formData.append("wineFile", wineFile);
         if (!wineFile && wineUrl.trim()) formData.append("wineUrl", wineUrl.trim());
+        if (hasWineMenu) {
+          formData.append("minPrice", String(minPrice));
+          formData.append("maxPrice", String(maxPrice));
+        }
 
         response = await fetch("/api/pair", {
           method: "POST",
@@ -69,6 +76,7 @@ export default function Home() {
             url: foodUrl.trim(),
             wineUrl: wineUrl.trim() || undefined,
             currency: userCurrency,
+            ...(hasWineMenu ? { minPrice, maxPrice } : {}),
           }),
         });
       }
@@ -173,6 +181,39 @@ export default function Home() {
                 isUploading={false}
               />
             </div>
+
+            {/* Price range slider — only when wine menu is provided */}
+            {hasWineMenu && (
+              <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
+                <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range</p>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-semibold text-white min-w-[50px]">${minPrice}</span>
+                  <div className="flex-1 flex flex-col gap-3">
+                    <label className="text-xs text-white/70 font-medium">Min Price</label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={500}
+                      step={5}
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
+                      className="w-full accent-wine"
+                    />
+                    <label className="text-xs text-white/70 font-medium">Max Price</label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={500}
+                      step={5}
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
+                      className="w-full accent-wine"
+                    />
+                  </div>
+                  <span className="text-sm font-semibold text-white min-w-[50px] text-right">${maxPrice}</span>
+                </div>
+              </div>
+            )}
 
             {/* Submit button */}
             <div className="mt-8 text-center">

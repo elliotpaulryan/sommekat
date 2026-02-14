@@ -138,12 +138,17 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                 {/* Badges row — only show when a specific bottle is recommended (wine list uploaded) */}
                 {(pairing.vivinoRating != null || pairing.restaurantPrice || pairing.retailPrice) && (
                   <div className="mt-3 grid grid-cols-3 gap-2">
-                    <div className="rounded-lg bg-purple-50 border border-purple-200 p-2 text-center">
+                    <a
+                      href={`https://www.vivino.com/search/wines?q=${encodeURIComponent(pairing.bottleSuggestion)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-lg bg-purple-50 border border-purple-200 p-2 text-center hover:bg-purple-100 transition-colors cursor-pointer no-underline"
+                    >
                       <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700">Vivino</p>
                       <p className="text-base font-bold text-purple-900 mt-0.5">
                         {pairing.vivinoRating != null ? `${pairing.vivinoRating}/5` : "—"}
                       </p>
-                    </div>
+                    </a>
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-center">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Restaurant</p>
                       <p className="text-base font-bold text-blue-900 mt-0.5">
@@ -157,6 +162,11 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                       </p>
                     </div>
                   </div>
+                )}
+                {pairing.outsidePriceRange && (
+                  <p className="mt-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                    Note: This wine is outside your selected price range, but it is the best pairing for this dish.
+                  </p>
                 )}
                 <p className="mt-3 text-sm font-medium text-black leading-relaxed">
                   {pairing.rationale}

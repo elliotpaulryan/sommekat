@@ -12,6 +12,7 @@ export interface WinePairing {
   robertParkerScore: number | null;
   retailPrice: string | null;
   restaurantPrice: string | null;
+  outsidePriceRange: boolean;
 }
 
 const client = new Anthropic();
@@ -40,7 +41,8 @@ Return your response as a JSON array with this exact structure (no markdown, no 
     "vivinoRating": null,
     "robertParkerScore": null,
     "retailPrice": null,
-    "restaurantPrice": null
+    "restaurantPrice": null,
+    "outsidePriceRange": false
   }
 ]
 
@@ -157,6 +159,8 @@ interface WineMenuOptions {
   wineMenuMimeType?: string;
   wineMenuUrl?: string;
   currency?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export async function getWinePairings(
@@ -178,6 +182,9 @@ export async function getWinePairings(
       makeContentBlock(wineMenu.wineMenuBase64, wineMenu.wineMenuMimeType)
     );
     prompt += WINE_MENU_ADDENDUM;
+    if (wineMenu.minPrice != null && wineMenu.maxPrice != null) {
+      prompt += `\n\nThe user has set a preferred price range of ${wineMenu.minPrice} to ${wineMenu.maxPrice} ${currency}. Prefer wines within this range. If the best pairing is outside this range, still recommend it but set "outsidePriceRange" to true. If the wine is within the range, set "outsidePriceRange" to false.`;
+    }
   } else if (wineMenu?.wineMenuUrl) {
     const wineBlock = await fetchUrlAsContentBlock(wineMenu.wineMenuUrl);
     contentBlocks.push(
@@ -185,6 +192,9 @@ export async function getWinePairings(
       wineBlock
     );
     prompt += WINE_MENU_ADDENDUM;
+    if (wineMenu.minPrice != null && wineMenu.maxPrice != null) {
+      prompt += `\n\nThe user has set a preferred price range of ${wineMenu.minPrice} to ${wineMenu.maxPrice} ${currency}. Prefer wines within this range. If the best pairing is outside this range, still recommend it but set "outsidePriceRange" to true. If the wine is within the range, set "outsidePriceRange" to false.`;
+    }
   }
 
   contentBlocks.push({ type: "text", text: prompt });
@@ -209,7 +219,9 @@ export async function getWinePairings(
 export async function getWinePairingsFromUrl(
   url: string,
   wineUrl?: string,
-  currency?: string
+  currency?: string,
+  minPrice?: number,
+  maxPrice?: number
 ): Promise<WinePairing[]> {
   const foodBlock = await fetchUrlAsContentBlock(url);
 
@@ -223,6 +235,9 @@ export async function getWinePairingsFromUrl(
       wineBlock
     );
     prompt += WINE_MENU_ADDENDUM;
+    if (minPrice != null && maxPrice != null) {
+      prompt += `\n\nThe user has set a preferred price range of ${minPrice} to ${maxPrice} ${currency || "USD"}. Prefer wines within this range. If the best pairing is outside this range, still recommend it but set "outsidePriceRange" to true. If the wine is within the range, set "outsidePriceRange" to false.`;
+    }
   }
 
   contentBlocks.push({ type: "text", text: prompt });
