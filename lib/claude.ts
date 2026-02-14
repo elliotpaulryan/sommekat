@@ -21,14 +21,28 @@ const client = new Anthropic();
 
 const BASE_PROMPT = `You are an expert sommelier. You will be given a FOOD MENU from a restaurant.
 
-YOUR TASK: Extract ONLY the MAIN COURSES / MAINS from the menu. Ignore starters, appetizers, entrees, sides, desserts, snacks, and drinks. Focus exclusively on the main dishes.
+YOUR TASK: Extract ONLY the MAIN COURSES from the menu and recommend a wine for each.
+
+WHAT COUNTS AS A MAIN COURSE:
+- The primary, substantial dishes that form the centre of a meal — typically protein-based dishes with sides, or hearty standalone dishes.
+- Different menus label these differently: "Mains", "Main Courses", "Entrées" (in American English), "Plats" (French), "Secondi" (Italian), "Principales" (Spanish), "Hauptgerichte" (German), or they may not be labelled at all.
+- If the menu has no clear section labels, use your judgement: mains are the larger, more substantial dishes — NOT small plates, nibbles, dips, breads, soups, or salads.
+
+WHAT TO EXCLUDE — do NOT include any of the following:
+- Starters, appetizers, antipasti, mezze, tapas (small plates), entrées (in non-American usage)
+- Soups, salads, breads, dips, nibbles, bar snacks
+- Side dishes, vegetables listed as sides, chips/fries listed separately
+- Desserts, cheese boards, petit fours
+- Drinks of any kind (wine, beer, cocktails, coffee, tea, juice, water)
+- Children's menu items
 
 For each main dish, recommend a wine to pair with it. Keep the recommendation BROAD — just the grape variety or wine style (e.g. "Pinot Noir", "Chardonnay", "Shiraz", "Riesling"). Do NOT recommend specific bottles or producers unless a wine menu has been provided.
 
 CRITICAL RULES:
-- The "dish" field must ONLY contain MAIN COURSE food items.
-- NEVER include starters, desserts, sides, or beverages.
+- The "dish" field must ONLY contain MAIN COURSE food items as defined above.
+- NEVER include starters, sides, desserts, snacks, or beverages.
 - NEVER put a wine, beer, cocktail, or any beverage in the "dish" field.
+- If you are unsure whether something is a main, err on the side of EXCLUDING it.
 - NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely. The description must only contain what the food is, its ingredients, and how it is prepared.
 
 Return your response as a JSON array with this exact structure (no markdown, no code fences, just raw JSON):
