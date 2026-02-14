@@ -40,7 +40,42 @@ function getWineColor(wineType: string): string {
     lower.includes("aglianico") ||
     lower.includes("barbera") ||
     lower.includes("xinomavro") ||
-    lower.includes("agiorgitiko")
+    lower.includes("agiorgitiko") ||
+    lower.includes("chianti") ||
+    lower.includes("barolo") ||
+    lower.includes("barbaresco") ||
+    lower.includes("montepulciano") ||
+    lower.includes("primitivo") ||
+    lower.includes("nero d'avola") ||
+    lower.includes("dolcetto") ||
+    lower.includes("valpolicella") ||
+    lower.includes("amarone") ||
+    lower.includes("rioja") ||
+    lower.includes("garnacha") ||
+    lower.includes("monastrell") ||
+    lower.includes("touriga") ||
+    lower.includes("tannat") ||
+    lower.includes("corvina") ||
+    lower.includes("bonarda") ||
+    lower.includes("carignan") ||
+    lower.includes("cinsault") ||
+    lower.includes("gamay") ||
+    lower.includes("beaujolais") ||
+    lower.includes("bordeaux") ||
+    lower.includes("burgundy") ||
+    lower.includes("côtes du rhône") ||
+    lower.includes("cotes du rhone") ||
+    lower.includes("châteauneuf") ||
+    lower.includes("chateauneuf") ||
+    lower.includes("saint-émilion") ||
+    lower.includes("saint-julien") ||
+    lower.includes("pauillac") ||
+    lower.includes("margaux") ||
+    lower.includes("pomerol") ||
+    lower.includes("brunello") ||
+    lower.includes("lambrusco") ||
+    lower.includes("zweigelt") ||
+    lower.includes("blaufränkisch")
   ) {
     return "bg-red-900/30 border-red-900/50 text-red-950";
   }
