@@ -16,8 +16,8 @@ function getWineColor(wineType: string): string {
   ) {
     return "bg-pink-100 border-pink-300 text-pink-900";
   }
-  if (lower.includes("sparkling") || lower.includes("champagne") || lower.includes("prosecco") || lower.includes("cava")) {
-    return "bg-amber-50 border-amber-200 text-amber-800";
+  if (lower.includes("sparkling") || lower.includes("champagne") || lower.includes("prosecco") || lower.includes("cava") || lower.includes("crémant") || lower.includes("cremant") || lower.includes("franciacorta") || lower.includes("sekt")) {
+    return "bg-amber-50 border-2 border-dashed border-amber-300 text-amber-800 shadow-[0_0_0_2px_rgba(251,191,36,0.15),0_0_0_4px_rgba(251,191,36,0.1)] animate-bubble";
   }
   // Red wines
   if (

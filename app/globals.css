@@ -47,3 +47,12 @@ body {
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+@keyframes bubble {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(251,191,36,0.15), 0 0 0 4px rgba(251,191,36,0.1); }
+  50% { box-shadow: 0 0 0 3px rgba(251,191,36,0.25), 0 0 0 6px rgba(251,191,36,0.15), 0 0 8px rgba(251,191,36,0.1); }
+}
+
+.animate-bubble {
+  animation: bubble 2s ease-in-out infinite;
+}
