@@ -248,10 +248,6 @@ export async function getWinePairings(
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 16384,
-    thinking: {
-      type: "enabled",
-      budget_tokens: 8000,
-    },
     messages: [
       {
         role: "user",
@@ -260,8 +256,8 @@ export async function getWinePairings(
     ],
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  const text = textBlock && textBlock.type === "text" ? textBlock.text : "";
+  const text =
+    message.content[0].type === "text" ? message.content[0].text : "";
 
   return parseResponse(text);
 }
@@ -293,10 +289,6 @@ export async function getWinePairingsFromUrl(
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 16384,
-    thinking: {
-      type: "enabled",
-      budget_tokens: 8000,
-    },
     messages: [
       {
         role: "user",
@@ -305,8 +297,8 @@ export async function getWinePairingsFromUrl(
     ],
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  const text = textBlock && textBlock.type === "text" ? textBlock.text : "";
+  const text =
+    message.content[0].type === "text" ? message.content[0].text : "";
 
   return parseResponse(text);
 }
