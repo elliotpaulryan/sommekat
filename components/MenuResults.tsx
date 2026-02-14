@@ -81,11 +81,11 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
         </button>
       </div>
 
-      <div className="space-y-3 rounded-2xl bg-wine-dark/60 p-2.5 sm:p-3">
+      <div className="space-y-2 rounded-xl bg-wine-dark/60 p-1.5 sm:p-2">
         {pairings.map((pairing, index) => (
           <div
             key={index}
-            className="group rounded-xl border-2 border-red-900/40 bg-white shadow-sm transition-all hover:shadow-md hover:border-red-900/60 overflow-hidden"
+            className="group rounded-lg border-2 border-[#722F37] bg-white shadow-sm transition-all hover:shadow-md hover:border-[#5a252c] overflow-hidden"
           >
             <div className="grid sm:grid-cols-2">
               {/* Left — Dish */}
@@ -165,7 +165,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                 )}
                 {pairing.outsidePriceRange && (
                   <p className="mt-2 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
-                    Note: This wine is outside your selected price range, but it is the best pairing for this dish.
+                    Note: This wine is outside your selected price range, but it is the best pairing for this dish and the closest wine to your price point.
                   </p>
                 )}
                 <p className="mt-3 text-sm font-medium text-black leading-relaxed">
