@@ -91,7 +91,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
           <h2 className="text-2xl font-extrabold text-red-900">
             Your Wine Pairings
           </h2>
-          <p className="text-red-900/80 mt-1 font-semibold">
+          <p className="text-red-900/80 mt-1 font-bold">
             {pairings.length} dish{pairings.length !== 1 ? "es" : ""} found
           </p>
         </div>
