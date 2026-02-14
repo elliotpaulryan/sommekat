@@ -186,31 +186,40 @@ export default function Home() {
             {hasWineMenu && (
               <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
                 <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range</p>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-semibold text-white min-w-[50px]">${minPrice}</span>
-                  <div className="flex-1 flex flex-col gap-3">
-                    <label className="text-xs text-white/70 font-medium">Min Price</label>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-white min-w-[45px]">${minPrice}</span>
+                  <div className="flex-1 relative h-8">
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-white/20"
+                      style={{ left: 0, right: 0 }}
+                    />
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-wine-light"
+                      style={{
+                        left: `${(minPrice / 500) * 100}%`,
+                        right: `${100 - (maxPrice / 500) * 100}%`,
+                      }}
+                    />
                     <input
                       type="range"
                       min={0}
                       max={500}
                       step={5}
                       value={minPrice}
-                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice))}
-                      className="w-full accent-wine"
+                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 5))}
+                      className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
                     />
-                    <label className="text-xs text-white/70 font-medium">Max Price</label>
                     <input
                       type="range"
                       min={0}
                       max={500}
                       step={5}
                       value={maxPrice}
-                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice))}
-                      className="w-full accent-wine"
+                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 5))}
+                      className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
                     />
                   </div>
-                  <span className="text-sm font-semibold text-white min-w-[50px] text-right">${maxPrice}</span>
+                  <span className="text-sm font-semibold text-white min-w-[45px] text-right">${maxPrice}</span>
                 </div>
               </div>
             )}
