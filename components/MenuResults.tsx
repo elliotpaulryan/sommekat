@@ -53,10 +53,10 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
     <div className="w-full max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-extrabold text-white">
+          <h2 className="text-2xl font-extrabold text-red-900">
             Your Wine Pairings
           </h2>
-          <p className="text-white mt-1 font-semibold">
+          <p className="text-red-900/80 mt-1 font-semibold">
             {pairings.length} dish{pairings.length !== 1 ? "es" : ""} found
           </p>
         </div>

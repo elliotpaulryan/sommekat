@@ -112,11 +112,11 @@ export default function Home() {
           </a>
           <div className="text-center">
             <a href="/" className="no-underline">
-              <h1 className="text-5xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 4px 20px rgba(0,0,0,0.6)", letterSpacing: "0.02em" }}>
+              <h1 className="text-5xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
-            <p className="mt-1 text-sm text-white/80 tracking-widest uppercase" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+            <p className="mt-1 text-sm text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
             </p>
           </div>
@@ -132,11 +132,11 @@ export default function Home() {
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-8xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 4px 20px rgba(0,0,0,0.6)", letterSpacing: "0.02em" }}>
+              <h1 className="text-8xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
-            <p className="mt-1 text-base text-white/80 tracking-widest uppercase" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
+            <p className="mt-1 text-base text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function Home() {
         {/* Tagline — only show on idle/error */}
         {(state === "idle" || state === "error") && (
           <div className="text-center mb-12">
-            <p className="text-lg text-white max-w-lg mx-auto leading-relaxed">
+            <p className="text-lg text-red-900 font-semibold max-w-lg mx-auto leading-relaxed">
               Upload a photo or PDF of any restaurant menu and our AI sommelier
               will recommend the ideal wine pairing for each item.
             </p>
