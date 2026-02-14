@@ -148,7 +148,7 @@ export default function Home() {
         {(state === "idle" || state === "error") && (
           <div className="text-center mb-12">
             <p className="text-lg text-red-900 font-semibold max-w-lg mx-auto leading-relaxed">
-              Upload a photo or PDF of any restaurant menu and our AI sommelier
+              Upload a photo or PDF of any restaurant menu and SommeKat
               will recommend the ideal wine pairing for each item.
             </p>
           </div>
