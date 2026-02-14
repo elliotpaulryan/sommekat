@@ -27,6 +27,14 @@ body {
   background-color: #1a2744;
 }
 
+@media (max-width: 639px) {
+  body {
+    background-size: 200%;
+    background-position: 30% 20%;
+    background-attachment: scroll;
+  }
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
