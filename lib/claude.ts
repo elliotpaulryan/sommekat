@@ -54,9 +54,26 @@ Return your response as a JSON array with this exact structure (no markdown, no 
 Additional rules:
 - ALWAYS translate dish descriptions to English. If the menu is in a foreign language, the description must still be in English.
 - NEVER include the dish price in the description field. The description should only contain what the dish is, its ingredients, and preparation method.
-- Evaluate each dish INDEPENDENTLY. Consider its specific ingredients, flavor profile, weight, and preparation method. Choose the best wine match for THAT dish alone.
+- Evaluate each dish INDEPENDENTLY using this structured approach:
+  1. IDENTIFY THE PRIMARY PROTEIN OR MAIN INGREDIENT FIRST. This is the most important factor. Fish and seafood almost always pair better with white wines. Red meat pairs with red wines. Poultry and pork are flexible.
+  2. THEN consider the preparation method (grilled, poached, fried, braised, etc.) and how it affects weight and flavour intensity.
+  3. THEN refine based on the sauce, spices, and secondary ingredients. Spicy dishes need wines with lower tannins and often a touch of sweetness (e.g. Gewürztraminer, off-dry Riesling, Viognier). Creamy sauces pair with richer whites. Acidic/tomato-based sauces need wines with good acidity.
+  4. MATCH the weight of the wine to the weight of the dish. Light dishes get light wines, heavy dishes get full-bodied wines.
+
+  COMMON PAIRING PRINCIPLES — follow these closely:
+  - Salmon → white or light rosé (Chardonnay, Pinot Grigio, dry Rosé, Viognier). Only pair salmon with a red if it is heavily spiced/blackened AND served with red wine sauce. Even spicy salmon (e.g. Moroccan, harissa) pairs better with an aromatic white (Gewürztraminer, Viognier, off-dry Riesling) than a red.
+  - White fish (cod, sea bass, halibut) → crisp whites (Sauvignon Blanc, Chablis, Vermentino, Albariño)
+  - Shellfish/crustaceans → Champagne, Muscadet, Chablis, Sauvignon Blanc
+  - Lamb → Cabernet Sauvignon, Syrah/Shiraz, Tempranillo, Rioja
+  - Beef steak → Cabernet Sauvignon, Malbec, Shiraz
+  - Pork → Pinot Noir, Chenin Blanc, Riesling (depends on preparation)
+  - Chicken → highly flexible, match to the sauce/preparation rather than the protein
+  - Pasta → match to the sauce, not the pasta itself
+  - Spicy food → off-dry Riesling, Gewürztraminer, Viognier, Torrontés (NOT tannic reds — tannins amplify heat)
+
 - It is perfectly fine to recommend the same wine for multiple dishes if it is genuinely the best pairing for each.
 - Do NOT try to vary your recommendations just for the sake of variety — accuracy matters more than diversity.
+- Think carefully about each pairing. A bad recommendation is worse than a repetitive one. Quality over variety.
 - altWineType: A mainstream, widely available wine alternative that would also pair well with the dish. Use well-known international grape varieties (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon, Pinot Noir, Chardonnay, Shiraz, Pinot Grigio, Riesling). This helps when the primary recommendation is a regional/niche grape that may not be available. If the primary recommendation is already mainstream, set altWineType to a different mainstream option, or null if there is no good alternative.
 - vivinoRating: The Vivino community rating for the recommended wine (a number from 1.0 to 5.0, e.g. 4.2). Vivino is the world's largest wine rating platform. Use your best knowledge to estimate the rating. Only include if a specific bottle is recommended (i.e. when a wine menu is provided). Otherwise set to null.
 - robertParkerScore: The Robert Parker / Wine Advocate score for the recommended wine (integer out of 100, e.g. 92). Only include if you are confident the wine has been rated. Set to null otherwise.
@@ -215,6 +232,10 @@ export async function getWinePairings(
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 16384,
+    thinking: {
+      type: "enabled",
+      budget_tokens: 8000,
+    },
     messages: [
       {
         role: "user",
@@ -223,8 +244,8 @@ export async function getWinePairings(
     ],
   });
 
-  const text =
-    message.content[0].type === "text" ? message.content[0].text : "";
+  const textBlock = message.content.find((b) => b.type === "text");
+  const text = textBlock && textBlock.type === "text" ? textBlock.text : "";
 
   return parseResponse(text);
 }
@@ -256,6 +277,10 @@ export async function getWinePairingsFromUrl(
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 16384,
+    thinking: {
+      type: "enabled",
+      budget_tokens: 8000,
+    },
     messages: [
       {
         role: "user",
@@ -264,8 +289,8 @@ export async function getWinePairingsFromUrl(
     ],
   });
 
-  const text =
-    message.content[0].type === "text" ? message.content[0].text : "";
+  const textBlock = message.content.find((b) => b.type === "text");
+  const text = textBlock && textBlock.type === "text" ? textBlock.text : "";
 
   return parseResponse(text);
 }
