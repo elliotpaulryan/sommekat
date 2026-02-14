@@ -156,7 +156,7 @@ export default function Home() {
 
         {/* Upload */}
         {(state === "idle" || state === "error") && (
-          <>
+          <form onSubmit={(e) => { e.preventDefault(); if (hasFoodMenu) handleSubmit(); }}>
             <div className="mx-auto max-w-3xl grid gap-6 sm:grid-cols-2">
               <MenuUpload
                 label="Food Menu"
@@ -177,7 +177,7 @@ export default function Home() {
             {/* Submit button */}
             <div className="mt-8 text-center">
               <button
-                onClick={handleSubmit}
+                type="submit"
                 disabled={!hasFoodMenu}
                 className="inline-flex items-center gap-2 rounded-xl bg-wine px-8 py-3 text-base font-medium text-white shadow-lg shadow-wine/25 transition-all hover:bg-wine-light hover:shadow-xl hover:shadow-wine/30 disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -203,7 +203,7 @@ export default function Home() {
                 {error}
               </div>
             )}
-          </>
+          </form>
         )}
 
         {/* Uploading */}
