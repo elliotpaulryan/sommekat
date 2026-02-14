@@ -19,6 +19,11 @@
 }
 
 body {
+  background-image: url('/9019ff1c-612a-471d-b4cc-a3b30db3a17f.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   background-color: #1a2744;
 }
 
