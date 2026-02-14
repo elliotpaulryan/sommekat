@@ -26,11 +26,12 @@ CRITICAL RULES:
 - The "dish" field must ONLY contain MAIN COURSE food items.
 - NEVER include starters, desserts, sides, or beverages.
 - NEVER put a wine, beer, cocktail, or any beverage in the "dish" field.
+- NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely. The description must only contain what the food is, its ingredients, and how it is prepared.
 
 Return your response as a JSON array with this exact structure (no markdown, no code fences, just raw JSON):
 [
   {
-    "dish": "Exact name of the main dish as it appears on the menu",
+    "dish": "Exact name of the main dish as it appears on the menu (NO prices)",
     "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price.",
     "wineType": "The grape variety or wine style (e.g., Pinot Noir, Chardonnay, Riesling, Shiraz)",
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
