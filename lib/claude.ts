@@ -34,11 +34,11 @@ CRITICAL RULES:
 Return your response as a JSON array with this exact structure (no markdown, no code fences, just raw JSON):
 [
   {
-    "dish": "Exact name of the main dish as it appears on the menu (NO prices)",
-    "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price.",
+    "dish": "The TITLE of the dish exactly as it appears on the menu (e.g. 'Moroccan Salmon', 'Beef Bourguignon', 'Chicken Milanese'). This is the dish NAME only — short, typically 1-4 words. NEVER put ingredients, descriptions, or prices here.",
+    "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price. This is SEPARATE from the dish title above.",
     "wineType": "The grape variety or wine style (e.g., Pinot Noir, Chardonnay, Riesling, Shiraz)",
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
-    "bottleSuggestion": "Just the grape variety or style (e.g. 'Pinot Noir', 'Oaked Chardonnay'). Only include a specific bottle if a wine menu was provided.",
+    "bottleSuggestion": "When NO wine menu is provided: a very short descriptive style (2-4 words) like 'Dry White', 'Soft Fruity Red', 'Crisp Light White', 'Bold Full-Bodied Red', 'Off-Dry Aromatic White'. Do NOT put grape names here — those go in wineType/altWineType. When a wine menu IS provided: the exact bottle name and producer from the wine list.",
     "producer": "The winery/producer name (e.g. 'Penfolds', 'Cloudy Bay', 'Château Margaux'). Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
     "rationale": "1-2 sentences explaining why this wine style pairs well with this dish",
     "producer": null,
@@ -52,6 +52,8 @@ Return your response as a JSON array with this exact structure (no markdown, no 
 ]
 
 Additional rules:
+- The "dish" field must be the DISH TITLE/NAME only (e.g. "Grilled Salmon", "Lamb Shank", "Pasta Carbonara"). It should be short (1-5 words). NEVER put a list of ingredients in the "dish" field. The dish title should be in the original language as it appears on the menu.
+- The "description" field is separate — this is where you describe the dish in English: what it is, key ingredients, and how it is prepared (1-2 sentences).
 - ALWAYS translate dish descriptions to English. If the menu is in a foreign language, the description must still be in English.
 - NEVER include the dish price in the description field. The description should only contain what the dish is, its ingredients, and preparation method.
 - Evaluate each dish INDEPENDENTLY using this structured approach:
