@@ -100,23 +100,23 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Header with logo */}
-      <header className="relative border-b border-wine-dark bg-wine-dark">
+      <header className="relative pt-8 sm:pt-12">
         {/* Mobile: stacked centered layout */}
         <div className="flex flex-col items-center gap-3 px-6 py-6 sm:hidden">
           <a href="/">
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-36 h-36 object-contain drop-shadow-xl rounded-full cursor-pointer"
+              className="w-36 h-36 object-contain drop-shadow-2xl rounded-full cursor-pointer"
             />
           </a>
           <div className="text-center">
             <a href="/" className="no-underline">
-              <h1 className="text-5xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(0,0,0,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-5xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 4px 20px rgba(0,0,0,0.6)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
-            <p className="mt-1 text-sm text-white/60 tracking-widest uppercase">
+            <p className="mt-1 text-sm text-white/80 tracking-widest uppercase" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
               AI-powered wine pairing
             </p>
           </div>
@@ -127,16 +127,16 @@ export default function Home() {
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-44 h-44 object-contain relative z-10 -mb-14 drop-shadow-xl rounded-full cursor-pointer"
+              className="w-44 h-44 object-contain drop-shadow-2xl rounded-full cursor-pointer"
             />
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-8xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(0,0,0,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-8xl text-white cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 4px 20px rgba(0,0,0,0.6)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
-            <p className="mt-1 text-base text-white/60 tracking-widest uppercase">
+            <p className="mt-1 text-base text-white/80 tracking-widest uppercase" style={{ textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>
               AI-powered wine pairing
             </p>
           </div>
