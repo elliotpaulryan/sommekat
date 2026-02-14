@@ -133,11 +133,9 @@ export default function Home() {
           </a>
           <div className="text-center">
             <a href="/" className="no-underline">
-              <img
-                src="/Gemini_Generated_Image_eio0oieio0oieio0.png"
-                alt="SommeKat"
-                className="h-[336px] object-contain cursor-pointer mix-blend-multiply"
-              />
+              <h1 className="text-5xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+                SommeKat
+              </h1>
             </a>
             <p className="mt-1 text-sm text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
@@ -145,7 +143,7 @@ export default function Home() {
           </div>
         </div>
         {/* Desktop: side-by-side layout */}
-        <div className="hidden sm:flex mx-auto max-w-5xl px-6 py-4 items-center gap-5">
+        <div className="hidden sm:flex mx-auto max-w-5xl px-6 py-4 items-end gap-5">
           <a href="/">
             <img
               src="/logo.png"
@@ -153,13 +151,11 @@ export default function Home() {
               className="w-40 h-40 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
             />
           </a>
-          <div>
+          <div className="pb-2">
             <a href="/" className="no-underline">
-              <img
-                src="/Gemini_Generated_Image_eio0oieio0oieio0.png"
-                alt="SommeKat"
-                className="h-96 object-contain cursor-pointer mix-blend-multiply"
-              />
+              <h1 className="text-8xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+                SommeKat
+              </h1>
             </a>
             <p className="mt-1 text-base text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
