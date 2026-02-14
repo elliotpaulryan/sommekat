@@ -1,12 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import MenuUpload from "@/components/MenuUpload";
 import MenuResults from "@/components/MenuResults";
 import LoadingState from "@/components/LoadingState";
 import type { WinePairing } from "@/lib/claude";
 
 type AppState = "idle" | "uploading" | "results" | "error";
+
+const LOCALE_CURRENCY: Record<string, string> = {
+  "en-US": "USD", "en-AU": "AUD", "en-GB": "GBP", "en-CA": "CAD", "en-NZ": "NZD",
+  "de-DE": "EUR", "fr-FR": "EUR", "es-ES": "EUR", "it-IT": "EUR", "nl-NL": "EUR",
+  "ja-JP": "JPY", "zh-CN": "CNY", "ko-KR": "KRW", "pt-BR": "BRL", "en-IN": "INR",
+  "en-SG": "SGD", "en-HK": "HKD", "en-ZA": "ZAR", "sv-SE": "SEK", "da-DK": "DKK",
+  "nb-NO": "NOK", "fi-FI": "EUR", "pl-PL": "PLN", "cs-CZ": "CZK", "hu-HU": "HUF",
+  "ro-RO": "RON", "th-TH": "THB", "vi-VN": "VND", "id-ID": "IDR", "ms-MY": "MYR",
+  "fil-PH": "PHP", "ar-AE": "AED", "ar-SA": "SAR", "he-IL": "ILS", "tr-TR": "TRY",
+  "ru-RU": "RUB", "uk-UA": "UAH", "el-GR": "EUR", "pt-PT": "EUR", "zh-TW": "TWD",
+};
+
+const SLIDER_MAX = 500;
+
+function getCurrencyInfo(): { code: string; symbol: string } {
+  try {
+    const lang = navigator.language;
+    const code = LOCALE_CURRENCY[lang] || "USD";
+    const symbol = new Intl.NumberFormat(lang, { style: "currency", currency: code })
+      .formatToParts(0)
+      .find((p) => p.type === "currency")?.value || code;
+    return { code, symbol };
+  } catch {
+    return { code: "USD", symbol: "$" };
+  }
+}
 
 export default function Home() {
   const [state, setState] = useState<AppState>("idle");
@@ -18,7 +44,10 @@ export default function Home() {
   const [wineFile, setWineFile] = useState<File | null>(null);
   const [wineUrl, setWineUrl] = useState("");
   const [minPrice, setMinPrice] = useState(0);
-  const [maxPrice, setMaxPrice] = useState(200);
+  const [maxPrice, setMaxPrice] = useState(SLIDER_MAX);
+
+  const { code: userCurrency, symbol: currencySymbol } = useMemo(() => getCurrencyInfo(), []);
+  const maxIsUnlimited = maxPrice >= SLIDER_MAX;
 
   const hasFoodMenu = !!foodFile || !!foodUrl.trim();
   const hasWineMenu = !!wineFile || !!wineUrl.trim();
@@ -30,29 +59,6 @@ export default function Home() {
     try {
       let response: Response;
 
-      const currency = new Intl.NumberFormat(navigator.language, { style: "currency", currency: "USD" })
-        .resolvedOptions().locale;
-      // Get the currency code from the user's locale
-      const userCurrency = (() => {
-        try {
-          const parts = new Intl.NumberFormat(navigator.language, { style: "currency", currency: "USD" }).resolvedOptions();
-          // Map locale to likely currency
-          const localeCurrency: Record<string, string> = {
-            "en-US": "USD", "en-AU": "AUD", "en-GB": "GBP", "en-CA": "CAD", "en-NZ": "NZD",
-            "de-DE": "EUR", "fr-FR": "EUR", "es-ES": "EUR", "it-IT": "EUR", "nl-NL": "EUR",
-            "ja-JP": "JPY", "zh-CN": "CNY", "ko-KR": "KRW", "pt-BR": "BRL", "en-IN": "INR",
-            "en-SG": "SGD", "en-HK": "HKD", "en-ZA": "ZAR", "sv-SE": "SEK", "da-DK": "DKK",
-            "nb-NO": "NOK", "fi-FI": "EUR", "pl-PL": "PLN", "cs-CZ": "CZK", "hu-HU": "HUF",
-            "ro-RO": "RON", "th-TH": "THB", "vi-VN": "VND", "id-ID": "IDR", "ms-MY": "MYR",
-            "fil-PH": "PHP", "ar-AE": "AED", "ar-SA": "SAR", "he-IL": "ILS", "tr-TR": "TRY",
-            "ru-RU": "RUB", "uk-UA": "UAH", "el-GR": "EUR", "pt-PT": "EUR", "zh-TW": "TWD",
-          };
-          return localeCurrency[navigator.language] || "USD";
-        } catch {
-          return "USD";
-        }
-      })();
-
       if (foodFile) {
         const formData = new FormData();
         formData.append("file", foodFile);
@@ -61,7 +67,7 @@ export default function Home() {
         if (!wineFile && wineUrl.trim()) formData.append("wineUrl", wineUrl.trim());
         if (hasWineMenu) {
           formData.append("minPrice", String(minPrice));
-          formData.append("maxPrice", String(maxPrice));
+          if (!maxIsUnlimited) formData.append("maxPrice", String(maxPrice));
         }
 
         response = await fetch("/api/pair", {
@@ -76,7 +82,7 @@ export default function Home() {
             url: foodUrl.trim(),
             wineUrl: wineUrl.trim() || undefined,
             currency: userCurrency,
-            ...(hasWineMenu ? { minPrice, maxPrice } : {}),
+            ...(hasWineMenu ? { minPrice, ...(maxIsUnlimited ? {} : { maxPrice }) } : {}),
           }),
         });
       }
@@ -187,7 +193,7 @@ export default function Home() {
               <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
                 <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range</p>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-white min-w-[45px]">${minPrice}</span>
+                  <span className="text-sm font-semibold text-white min-w-[45px]">{currencySymbol}{minPrice}</span>
                   <div className="flex-1 relative h-8">
                     <div
                       className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-white/20"
@@ -196,30 +202,32 @@ export default function Home() {
                     <div
                       className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-wine-light"
                       style={{
-                        left: `${(minPrice / 500) * 100}%`,
-                        right: `${100 - (maxPrice / 500) * 100}%`,
+                        left: `${(minPrice / SLIDER_MAX) * 100}%`,
+                        right: `${100 - (maxPrice / SLIDER_MAX) * 100}%`,
                       }}
                     />
                     <input
                       type="range"
                       min={0}
-                      max={500}
-                      step={5}
+                      max={SLIDER_MAX}
+                      step={1}
                       value={minPrice}
-                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 5))}
+                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 1))}
                       className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
                     />
                     <input
                       type="range"
                       min={0}
-                      max={500}
-                      step={5}
+                      max={SLIDER_MAX}
+                      step={1}
                       value={maxPrice}
-                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 5))}
+                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 1))}
                       className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
                     />
                   </div>
-                  <span className="text-sm font-semibold text-white min-w-[45px] text-right">${maxPrice}</span>
+                  <span className="text-sm font-semibold text-white min-w-[45px] text-right">
+                    {maxIsUnlimited ? "Max" : `${currencySymbol}${maxPrice}`}
+                  </span>
                 </div>
               </div>
             )}
