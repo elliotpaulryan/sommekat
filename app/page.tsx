@@ -133,7 +133,7 @@ export default function Home() {
           </a>
           <div className="text-center">
             <a href="/" className="no-underline">
-              <h1 className="text-4xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-[2.75rem] text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
@@ -153,7 +153,7 @@ export default function Home() {
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-7xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-[5rem] text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
