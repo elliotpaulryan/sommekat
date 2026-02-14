@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+  --color-burgundy-50: #fdf2f4;
+  --color-burgundy-100: #fce7eb;
+  --color-burgundy-200: #f9d0d9;
+  --color-burgundy-300: #f4a9b8;
+  --color-burgundy-400: #ec7793;
+  --color-burgundy-500: #df4a6f;
+  --color-burgundy-600: #cc2d57;
+  --color-burgundy-700: #ab1f45;
+  --color-burgundy-800: #8f1d3e;
+  --color-burgundy-900: #722039;
+  --color-wine: #722f37;
+  --color-wine-light: #8f3a44;
+  --color-wine-dark: #4a1e24;
+  --color-cream: #faf7f2;
+  --color-gold: #c9a96e;
+}
+
+body {
+  background-color: #1a2744;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #e5e1da 25%, #f5f0e8 50%, #e5e1da 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
