@@ -19,7 +19,7 @@ const LOCALE_CURRENCY: Record<string, string> = {
   "ru-RU": "RUB", "uk-UA": "UAH", "el-GR": "EUR", "pt-PT": "EUR", "zh-TW": "TWD",
 };
 
-const SLIDER_MAX = 500;
+const SLIDER_MAX = 200;
 
 function getCurrencyInfo(): { code: string; symbol: string } {
   try {
