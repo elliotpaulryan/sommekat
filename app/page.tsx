@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import MenuUpload from "@/components/MenuUpload";
 import MenuResults from "@/components/MenuResults";
 import LoadingState from "@/components/LoadingState";
@@ -46,8 +46,15 @@ export default function Home() {
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(SLIDER_MAX);
 
-  const { code: userCurrency, symbol: currencySymbol } = useMemo(() => getCurrencyInfo(), []);
+  const [userCurrency, setUserCurrency] = useState("USD");
+  const [currencySymbol, setCurrencySymbol] = useState("$");
   const maxIsUnlimited = maxPrice >= SLIDER_MAX;
+
+  useEffect(() => {
+    const info = getCurrencyInfo();
+    setUserCurrency(info.code);
+    setCurrencySymbol(info.symbol);
+  }, []);
 
   const hasFoodMenu = !!foodFile || !!foodUrl.trim();
   const hasWineMenu = !!wineFile || !!wineUrl.trim();
