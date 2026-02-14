@@ -133,9 +133,11 @@ export default function Home() {
           </a>
           <div className="text-center">
             <a href="/" className="no-underline">
-              <h1 className="text-5xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
-                SommeKat
-              </h1>
+              <img
+                src="/Gemini_Generated_Image_eio0oieio0oieio0.png"
+                alt="SommeKat"
+                className="h-16 object-contain cursor-pointer mix-blend-multiply"
+              />
             </a>
             <p className="mt-1 text-sm text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
@@ -153,9 +155,11 @@ export default function Home() {
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-8xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
-                SommeKat
-              </h1>
+              <img
+                src="/Gemini_Generated_Image_eio0oieio0oieio0.png"
+                alt="SommeKat"
+                className="h-28 object-contain cursor-pointer mix-blend-multiply"
+              />
             </a>
             <p className="mt-1 text-base text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
