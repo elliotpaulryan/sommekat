@@ -244,7 +244,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={!hasFoodMenu}
-                className="inline-flex items-center gap-2 rounded-xl px-10 py-4 text-lg font-bold text-white border-t-2 border-l-2 border-r-2 border-b-4 border-t-white/30 border-l-white/20 border-r-black/20 border-b-black/30 bg-gradient-to-b from-wine-light to-wine shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer hover:from-wine hover:to-wine-light hover:shadow-[0_6px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-[0.98] active:border-b-2 active:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(0,0,0,0.2)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className={`inline-flex items-center gap-2 rounded-xl px-10 py-4 text-lg font-bold text-white border-t-2 border-l-2 border-r-2 border-b-4 transition-all ${hasFoodMenu ? "border-t-white/30 border-l-white/20 border-r-black/20 border-b-black/30 bg-gradient-to-b from-wine-light to-wine shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer hover:from-wine hover:to-wine-light hover:shadow-[0_6px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-[0.98] active:border-b-2 active:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(0,0,0,0.2)]" : "border-t-white/10 border-l-white/10 border-r-black/10 border-b-black/10 bg-gradient-to-b from-wine-light/40 to-wine/40 shadow-none opacity-50 cursor-not-allowed grayscale-[30%]"}`
               >
                 <svg
                   className="w-5 h-5"
