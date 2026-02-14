@@ -31,7 +31,7 @@ Return your response as a JSON array with this exact structure (no markdown, no 
 [
   {
     "dish": "Exact name of the main dish as it appears on the menu",
-    "description": "A short description of the dish — what it is, key ingredients, and how it is prepared (1-2 sentences)",
+    "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price.",
     "wineType": "The grape variety or wine style (e.g., Pinot Noir, Chardonnay, Riesling, Shiraz)",
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
     "bottleSuggestion": "Just the grape variety or style (e.g. 'Pinot Noir', 'Oaked Chardonnay'). Only include a specific bottle if a wine menu was provided.",
@@ -44,6 +44,8 @@ Return your response as a JSON array with this exact structure (no markdown, no 
 ]
 
 Additional rules:
+- ALWAYS translate dish descriptions to English. If the menu is in a foreign language, the description must still be in English.
+- NEVER include the dish price in the description field. The description should only contain what the dish is, its ingredients, and preparation method.
 - Evaluate each dish INDEPENDENTLY. Consider its specific ingredients, flavor profile, weight, and preparation method. Choose the best wine match for THAT dish alone.
 - It is perfectly fine to recommend the same wine for multiple dishes if it is genuinely the best pairing for each.
 - Do NOT try to vary your recommendations just for the sake of variety — accuracy matters more than diversity.
