@@ -42,7 +42,7 @@ function getWineColor(wineType: string): string {
     lower.includes("xinomavro") ||
     lower.includes("agiorgitiko")
   ) {
-    return "bg-red-900/10 border-red-900/30 text-red-900";
+    return "bg-red-900/30 border-red-900/50 text-red-950";
   }
   // White wines (default — golden)
   return "bg-amber-100 border-amber-400 text-amber-900";

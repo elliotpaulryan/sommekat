@@ -127,12 +127,12 @@ export default function Home() {
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-32 h-32 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
+              className="w-40 h-40 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
             />
           </a>
           <div className="pb-2">
             <a href="/" className="no-underline">
-              <h1 className="text-7xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+              <h1 className="text-8xl text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
             </a>
