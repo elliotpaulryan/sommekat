@@ -81,11 +81,11 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
         </button>
       </div>
 
-      <div className="space-y-4 rounded-3xl bg-wine-dark/60 p-4 sm:p-6">
+      <div className="space-y-3 rounded-2xl bg-wine-dark/60 p-2.5 sm:p-3">
         {pairings.map((pairing, index) => (
           <div
             key={index}
-            className="group rounded-2xl border border-stone-200 bg-white shadow-sm transition-all hover:shadow-md hover:border-stone-300 overflow-hidden"
+            className="group rounded-xl border-2 border-red-900/40 bg-white shadow-sm transition-all hover:shadow-md hover:border-red-900/60 overflow-hidden"
           >
             <div className="grid sm:grid-cols-2">
               {/* Left — Dish */}
@@ -139,7 +139,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                 {(pairing.vivinoRating != null || pairing.restaurantPrice || pairing.retailPrice) && (
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     <a
-                      href={`https://www.vivino.com/search/wines?q=${encodeURIComponent(pairing.bottleSuggestion)}`}
+                      href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([pairing.producer, pairing.bottleSuggestion].filter(Boolean).join(" "))}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded-lg bg-purple-50 border border-purple-200 p-2 text-center hover:bg-purple-100 transition-colors cursor-pointer no-underline"

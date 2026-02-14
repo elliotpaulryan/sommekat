@@ -7,6 +7,7 @@ export interface WinePairing {
   wineType: string;
   altWineType: string | null;
   bottleSuggestion: string;
+  producer: string | null;
   rationale: string;
   vivinoRating: number | null;
   robertParkerScore: number | null;
@@ -37,7 +38,9 @@ Return your response as a JSON array with this exact structure (no markdown, no 
     "wineType": "The grape variety or wine style (e.g., Pinot Noir, Chardonnay, Riesling, Shiraz)",
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
     "bottleSuggestion": "Just the grape variety or style (e.g. 'Pinot Noir', 'Oaked Chardonnay'). Only include a specific bottle if a wine menu was provided.",
+    "producer": "The winery/producer name (e.g. 'Penfolds', 'Cloudy Bay', 'Château Margaux'). Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
     "rationale": "1-2 sentences explaining why this wine style pairs well with this dish",
+    "producer": null,
     "vivinoRating": null,
     "robertParkerScore": null,
     "retailPrice": null,
