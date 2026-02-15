@@ -118,16 +118,16 @@ Additional rules:
 - Do NOT try to vary your recommendations just for the sake of variety — accuracy matters more than diversity.
 - Think carefully about each pairing. Quality over variety.
 - altWineType: A mainstream, widely available alternative. If the primary is already mainstream, set to a different mainstream option, or null.
-- vivinoRating: Vivino rating (1.0-5.0). Only if a specific bottle is recommended. Otherwise null.
+- vivinoRating: Vivino rating (1.0-5.0). When a specific bottle is recommended, you MUST provide your best estimate of its Vivino rating — do not leave this null. Only null when no wine menu is provided and the recommendation is a general style.
 - robertParkerScore: Robert Parker score (out of 100). Only if confident. Otherwise null.
-- retailPrice: Only if a specific bottle is recommended. Otherwise null.
+- retailPrice: Typical retail price for this bottle with currency symbol. When a specific bottle is recommended, you MUST provide your best estimate of the retail price — do not leave this null. Only null when no wine menu is provided.
 - restaurantPriceGlass: Per-glass price from wine menu with currency symbol. Null if not listed or no wine menu.
 - restaurantPriceBottle: Per-bottle price from wine menu with currency symbol. Null if not listed or no wine menu.`;
 }
 
 const WINE_MENU_ADDENDUM = `
 
-A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the bottleSuggestion field, use the exact wine name and producer as listed on the wine menu. Include restaurantPriceGlass and restaurantPriceBottle from the wine menu if listed. Include the vivinoRating (1.0-5.0), robertParkerScore (out of 100), and retailPrice for the specific bottle if you know them.`;
+A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the bottleSuggestion field, use the exact wine name and producer as listed on the wine menu. Include restaurantPriceGlass and restaurantPriceBottle from the wine menu if listed. You MUST provide vivinoRating (your best estimate, 1.0-5.0) and retailPrice (typical retail price with currency symbol) for every specific bottle — never leave these null when recommending a named wine.`;
 
 function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | undefined, currency: string): string {
   if (minPrice == null && maxPrice == null) return "";
