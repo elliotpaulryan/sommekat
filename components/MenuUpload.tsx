@@ -127,10 +127,12 @@ export default function MenuUpload({
           onDragLeave={() => setDragActive(false)}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
-          className={`relative cursor-pointer rounded-2xl border-2 border-dashed p-8 text-center transition-all duration-200 ${
+          className={`relative cursor-pointer rounded-2xl border-2 p-8 text-center transition-all duration-200 ${
             dragActive
-              ? "border-wine bg-burgundy-50 scale-[1.02]"
-              : "border-burgundy-300 bg-cream hover:border-wine-light hover:bg-burgundy-50/50"
+              ? "border-dashed border-wine bg-burgundy-50 scale-[1.02]"
+              : selectedFile
+                ? "border-solid border-green-500 bg-green-50/80 shadow-[0_0_0_3px_rgba(34,197,94,0.15)]"
+                : "border-dashed border-burgundy-300 bg-cream hover:border-wine-light hover:bg-burgundy-50/50"
           }`}
         >
           <input
@@ -236,7 +238,11 @@ export default function MenuUpload({
           value={menuUrl}
           onChange={(e) => handleUrlInput(e.target.value)}
           placeholder="https://restaurant.com/menu"
-          className="w-full rounded-xl border border-burgundy-300/40 bg-cream px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-wine/50 focus:border-wine"
+          className={`w-full rounded-xl border px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-wine/50 focus:border-wine transition-all ${
+            menuUrl.trim()
+              ? "border-green-500 bg-green-50/80 shadow-[0_0_0_2px_rgba(34,197,94,0.15)]"
+              : "border-burgundy-300/40 bg-cream"
+          }`}
         />
       </div>
     </div>
