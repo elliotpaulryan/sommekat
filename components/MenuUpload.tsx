@@ -12,9 +12,16 @@ interface MenuUploadProps {
 
 const MAX_IMAGE_SIZE = 3.5 * 1024 * 1024; // 3.5MB to stay well under Claude's 5MB base64 limit
 
+function isImageFile(file: File): boolean {
+  if (file.type.startsWith("image/")) return true;
+  // Some mobile browsers don't set MIME type for HEIC/HEIF
+  const ext = file.name.toLowerCase().split(".").pop() || "";
+  return ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "bmp", "tiff", "tif"].includes(ext);
+}
+
 function compressImage(file: File): Promise<File> {
   return new Promise((resolve) => {
-    if (!file.type.startsWith("image/") || file.type === "image/gif") {
+    if (!isImageFile(file) || file.type === "image/gif") {
       resolve(file);
       return;
     }
@@ -22,12 +29,15 @@ function compressImage(file: File): Promise<File> {
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      if (file.size <= MAX_IMAGE_SIZE) {
+      // Always convert HEIC/HEIF to JPEG; compress other large images
+      const isHeic = file.type === "image/heic" || file.type === "image/heif" || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name);
+      const needsConversion = isHeic || !file.type || file.size > MAX_IMAGE_SIZE;
+      if (!needsConversion) {
         resolve(file);
         return;
       }
       const canvas = document.createElement("canvas");
-      const scale = Math.min(1, Math.sqrt(MAX_IMAGE_SIZE / file.size));
+      const scale = file.size > MAX_IMAGE_SIZE ? Math.min(1, Math.sqrt(MAX_IMAGE_SIZE / file.size)) : 1;
       canvas.width = Math.round(img.width * scale);
       canvas.height = Math.round(img.height * scale);
       const ctx = canvas.getContext("2d")!;
@@ -35,14 +45,18 @@ function compressImage(file: File): Promise<File> {
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            resolve(new File([blob], file.name, { type: "image/jpeg" }));
+            resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
           } else {
             resolve(file);
           }
         },
         "image/jpeg",
-        0.8
+        0.85
       );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
     };
     img.src = url;
   });
@@ -138,7 +152,7 @@ export default function MenuUpload({
           <input
             ref={inputRef}
             type="file"
-            accept=".jpg,.jpeg,.png,.webp,.gif,.pdf"
+            accept="image/*,.pdf"
             onChange={handleChange}
             className="hidden"
           />

@@ -8,6 +8,8 @@ const ALLOWED_TYPES = [
   "image/gif",
   "image/heic",
   "image/heif",
+  "image/bmp",
+  "image/tiff",
   "application/pdf",
 ];
 
@@ -19,8 +21,11 @@ async function fileToBase64(file: File) {
 }
 
 function validateFile(file: File, label: string) {
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return `Unsupported ${label} file type: ${file.type}. Please upload a JPG, PNG, WebP, GIF, or PDF.`;
+  // Allow files with no MIME type (some mobile browsers) if they have a valid extension
+  const ext = file.name.toLowerCase().split(".").pop() || "";
+  const validExtensions = ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "bmp", "tiff", "tif", "pdf"];
+  if (!ALLOWED_TYPES.includes(file.type) && !validExtensions.includes(ext)) {
+    return `Unsupported ${label} file type: ${file.type || "unknown"}. Please upload a JPG, PNG, WebP, GIF, or PDF.`;
   }
   if (file.size > MAX_FILE_SIZE) {
     return `${label} file too large. Maximum size is 20MB.`;
