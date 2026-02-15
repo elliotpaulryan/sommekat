@@ -70,6 +70,7 @@ CRITICAL RULES:
 Return your response as a JSON object with this exact structure (no markdown, no code fences, just raw JSON):
 {
   "restaurantName": "The name of the restaurant if it appears on the food menu. If not found, use null.",
+  "menuCurrency": "The currency used on the menu (detected from price symbols/codes on the food or wine menu, e.g. 'GBP', 'EUR', 'USD', 'AUD'). If no prices are visible, use null.",
   "pairings": [
   {
     "dish": "The TITLE of the dish exactly as it appears on the menu (e.g. 'Moroccan Salmon', 'Beef Bourguignon', 'Tiramisu'). This is the dish NAME only — short, typically 1-4 words. NEVER put ingredients, descriptions, or prices here.",
@@ -132,13 +133,14 @@ const WINE_MENU_ADDENDUM = `
 
 A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the bottleSuggestion field, use the exact wine name and producer as listed on the wine menu. Include restaurantPriceGlass and restaurantPriceBottle from the wine menu if listed. You MUST provide vivinoRating (your best estimate, 1.0-5.0) and retailPrice (typical retail price with currency symbol) for every specific bottle — never leave these null when recommending a named wine.`;
 
-function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | undefined, currency: string): string {
+function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | undefined, userCurrency: string): string {
   if (minPrice == null && maxPrice == null) return "";
+  const conversionNote = `The user's price range is in ${userCurrency}. If the wine menu uses a DIFFERENT currency, you MUST convert the user's price range to the menu's currency using approximate exchange rates before filtering. Apply the filter using the converted values in the menu's currency.`;
   if (minPrice != null && maxPrice != null) {
-    return `\n\nThe user has set a preferred BOTTLE price range of ${minPrice} to ${maxPrice} ${currency}. You MUST ONLY recommend wines whose BOTTLE price falls within this range. Filter the wine list by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price within the range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price within this range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
+    return `\n\nThe user has set a preferred BOTTLE price range of ${minPrice} to ${maxPrice} ${userCurrency}. ${conversionNote} Filter the wine list by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price within the converted range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price within this range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
   }
   if (minPrice != null) {
-    return `\n\nThe user has set a minimum BOTTLE price of ${minPrice} ${currency} with no upper limit. You MUST ONLY recommend wines whose BOTTLE price is at or above ${minPrice} ${currency}. Filter by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price at or above this value and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price at or above this value for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
+    return `\n\nThe user has set a minimum BOTTLE price of ${minPrice} ${userCurrency} with no upper limit. ${conversionNote} Filter by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price at or above the converted value and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price at or above this value for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
   }
   return "";
 }
@@ -224,6 +226,7 @@ async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
 
 interface ParsedResponse {
   restaurantName: string | null;
+  menuCurrency: string | null;
   pairings: WinePairing[];
 }
 
@@ -238,7 +241,7 @@ function parseResponse(text: string): ParsedResponse {
     try {
       const parsed = JSON.parse(cleaned.slice(objStart, objEnd + 1));
       if (parsed.pairings && Array.isArray(parsed.pairings)) {
-        return { restaurantName: parsed.restaurantName || null, pairings: parsed.pairings };
+        return { restaurantName: parsed.restaurantName || null, menuCurrency: parsed.menuCurrency || null, pairings: parsed.pairings };
       }
     } catch {
       // Fall through to array parsing
@@ -253,7 +256,7 @@ function parseResponse(text: string): ParsedResponse {
       `No JSON found in response. Claude said: "${text.slice(0, 300)}"`
     );
   }
-  return { restaurantName: null, pairings: JSON.parse(cleaned.slice(start, end + 1)) };
+  return { restaurantName: null, menuCurrency: null, pairings: JSON.parse(cleaned.slice(start, end + 1)) };
 }
 
 interface WineMenuOptions {
@@ -277,7 +280,7 @@ export async function getWinePairings(
 
   const currency = wineMenu?.currency || "USD";
   const courses = wineMenu?.courses || ["mains"];
-  let prompt = buildBasePrompt(courses) + `\n- Use ${currency} as the currency for all prices.`;
+  let prompt = buildBasePrompt(courses) + `\n- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${currency} and set "menuCurrency" to "${currency}".`;
 
   // Add wine menu if provided
   if (wineMenu?.wineMenuBase64 && wineMenu.wineMenuMimeType) {
@@ -327,7 +330,8 @@ export async function getWinePairingsFromUrl(
   const foodBlock = await fetchUrlAsContentBlock(url);
 
   const contentBlocks: ContentBlockParam[] = [foodBlock];
-  let prompt = buildBasePrompt(courses || ["mains"]) + `\n- Use ${currency || "USD"} as the currency for all prices.`;
+  const fallbackCurrency = currency || "USD";
+  let prompt = buildBasePrompt(courses || ["mains"]) + `\n- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${fallbackCurrency} and set "menuCurrency" to "${fallbackCurrency}".`;
 
   if (wineUrl) {
     const wineBlock = await fetchUrlAsContentBlock(wineUrl);
