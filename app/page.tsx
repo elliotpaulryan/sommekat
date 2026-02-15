@@ -45,6 +45,7 @@ export default function Home() {
   const [wineUrl, setWineUrl] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(SLIDER_MAX);
+  const [courses, setCourses] = useState<string[]>(["mains"]);
 
   const [userCurrency, setUserCurrency] = useState("USD");
   const [currencySymbol, setCurrencySymbol] = useState("$");
@@ -70,6 +71,7 @@ export default function Home() {
         const formData = new FormData();
         formData.append("file", foodFile);
         formData.append("currency", userCurrency);
+        formData.append("courses", JSON.stringify(courses));
         if (wineFile) formData.append("wineFile", wineFile);
         if (!wineFile && wineUrl.trim()) formData.append("wineUrl", wineUrl.trim());
         if (hasWineMenu) {
@@ -89,6 +91,7 @@ export default function Home() {
             url: foodUrl.trim(),
             wineUrl: wineUrl.trim() || undefined,
             currency: userCurrency,
+            courses,
             ...(hasWineMenu ? { minPrice, ...(maxIsUnlimited ? {} : { maxPrice }) } : {}),
           }),
         });
@@ -193,6 +196,42 @@ export default function Home() {
                 onUrlChange={setWineUrl}
                 isUploading={false}
               />
+            </div>
+
+            {/* Course selection */}
+            <div className="mx-auto max-w-3xl mt-6 flex items-center justify-center gap-3">
+              <span className="text-sm font-bold text-red-900">Include:</span>
+              {[
+                { id: "starters", label: "Starters" },
+                { id: "mains", label: "Mains" },
+                { id: "desserts", label: "Desserts" },
+              ].map(({ id, label }) => {
+                const isSelected = courses.includes(id);
+                const isMains = id === "mains";
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => {
+                      if (isMains) return;
+                      setCourses((prev) =>
+                        prev.includes(id)
+                          ? prev.filter((c) => c !== id)
+                          : [...prev, id]
+                      );
+                    }}
+                    className={[
+                      "rounded-full px-4 py-1.5 text-sm font-bold transition-all border-2",
+                      isSelected
+                        ? "bg-wine text-white border-wine shadow-md"
+                        : "bg-white/80 text-wine border-wine/30 hover:border-wine/60",
+                      isMains ? "cursor-default" : "cursor-pointer",
+                    ].join(" ")}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Price range slider — only when wine menu is provided */}

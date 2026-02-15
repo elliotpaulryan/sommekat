@@ -89,7 +89,28 @@ function formatPrice(price: string | null): string {
   return price.replace(/(\d+\.\d)(?!\d)/, "$10");
 }
 
+const COURSE_ORDER = ["starter", "main", "dessert"] as const;
+const COURSE_LABELS: Record<string, string> = {
+  starter: "Starters",
+  main: "Main Courses",
+  dessert: "Desserts",
+};
+
 export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
+  const grouped = COURSE_ORDER
+    .map((course) => ({
+      course,
+      label: COURSE_LABELS[course],
+      items: pairings.filter((p) => p.course === course),
+    }))
+    .filter((g) => g.items.length > 0);
+
+  // If no course field exists (backward compat), show all as one group
+  const hasCourseTags = pairings.some((p) => p.course);
+  const sections = hasCourseTags
+    ? grouped
+    : [{ course: "main" as const, label: "Main Courses", items: pairings }];
+
   return (
     <div className="w-full max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-8">
@@ -122,8 +143,13 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
         </button>
       </div>
 
+      {sections.map((section) => (
+      <div key={section.course} className="mb-6">
+        {sections.length > 1 && (
+          <h3 className="text-xl font-extrabold text-red-900 mb-3">{section.label}</h3>
+        )}
       <div className="space-y-2 rounded-xl bg-wine-dark/60 p-1.5 sm:p-2">
-        {pairings.map((pairing, index) => (
+        {section.items.map((pairing, index) => (
           <div
             key={index}
             className="group rounded-lg border-2 border-[#722F37] bg-white shadow-sm transition-all hover:shadow-md hover:border-[#5a252c] overflow-hidden"
@@ -239,6 +265,8 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
           </div>
         ))}
       </div>
+      </div>
+      ))}
     </div>
   );
 }

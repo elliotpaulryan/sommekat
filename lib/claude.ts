@@ -4,6 +4,7 @@ import type { ContentBlockParam } from "@anthropic-ai/sdk/resources/messages";
 export interface WinePairing {
   dish: string;
   description: string;
+  course: "starter" | "main" | "dessert";
   wineType: string;
   altWineType: string | null;
   bottleSuggestion: string;
@@ -19,41 +20,63 @@ export interface WinePairing {
 
 const client = new Anthropic();
 
-const BASE_PROMPT = `You are an expert sommelier. You will be given a FOOD MENU from a restaurant.
+function buildBasePrompt(courses: string[]): string {
+  const includeStarters = courses.includes("starters");
+  const includeMains = courses.includes("mains");
+  const includeDesserts = courses.includes("desserts");
 
-YOUR TASK: Extract ONLY the MAIN COURSES from the menu and recommend a wine for each.
+  const courseNames = [
+    includeStarters && "STARTERS/APPETIZERS",
+    includeMains && "MAIN COURSES",
+    includeDesserts && "DESSERTS",
+  ].filter(Boolean).join(", ");
 
-WHAT COUNTS AS A MAIN COURSE:
-- The primary, substantial dishes that form the centre of a meal — typically protein-based dishes with sides, or hearty standalone dishes.
-- Different menus label these differently: "Mains", "Main Courses", "Entrées" (in American English), "Plats" (French), "Secondi" (Italian), "Principales" (Spanish), "Hauptgerichte" (German), or they may not be labelled at all.
-- If the menu has no clear section labels, use your judgement: mains are the larger, more substantial dishes — NOT small plates, nibbles, dips, breads, soups, or salads.
+  const courseInstructions: string[] = [];
+  if (includeStarters) {
+    courseInstructions.push(`STARTERS/APPETIZERS: Smaller dishes served before the main course. Labelled as "Starters", "Appetizers", "Entrées" (non-American), "Antipasti", "Hors d'oeuvres", "Primi" (Italian), "Entrées" (French), "Vorspeisen" (German), or similar. Includes soups and salads if they are listed as starters. Set "course" to "starter" for these.`);
+  }
+  if (includeMains) {
+    courseInstructions.push(`MAIN COURSES: The primary, substantial dishes that form the centre of a meal — typically protein-based dishes with sides, or hearty standalone dishes. Labelled as "Mains", "Main Courses", "Entrées" (American English), "Plats" (French), "Secondi" (Italian), "Principales" (Spanish), "Hauptgerichte" (German), or they may not be labelled at all. Set "course" to "main" for these.`);
+  }
+  if (includeDesserts) {
+    courseInstructions.push(`DESSERTS: Sweet dishes served at the end of the meal. Labelled as "Desserts", "Dolci" (Italian), "Postres" (Spanish), "Nachspeisen" (German), "Desserts/Puddings" (British), or similar. Includes cheese boards if listed in the dessert section. Set "course" to "dessert" for these. For desserts, consider dessert wines (Sauternes, Moscato d'Asti, Port, late-harvest Riesling, Tokaji) or sparkling wines as pairings.`);
+  }
+
+  const excludeList: string[] = [];
+  if (!includeStarters) excludeList.push("Starters, appetizers, antipasti, mezze, tapas, soups, salads");
+  if (!includeDesserts) excludeList.push("Desserts, cheese boards, petit fours");
+  excludeList.push("Side dishes, vegetables listed as sides, chips/fries listed separately");
+  excludeList.push("Drinks of any kind (wine, beer, cocktails, coffee, tea, juice, water)");
+  excludeList.push("Children's menu items");
+  excludeList.push("Breads, dips, nibbles, bar snacks");
+
+  return `You are an expert sommelier. You will be given a FOOD MENU from a restaurant.
+
+YOUR TASK: Extract ${courseNames} from the menu and recommend a wine for each dish.
+
+WHAT TO INCLUDE:
+${courseInstructions.map(i => `- ${i}`).join("\n")}
 
 WHAT TO EXCLUDE — do NOT include any of the following:
-- Starters, appetizers, antipasti, mezze, tapas (small plates), entrées (in non-American usage)
-- Soups, salads, breads, dips, nibbles, bar snacks
-- Side dishes, vegetables listed as sides, chips/fries listed separately
-- Desserts, cheese boards, petit fours
-- Drinks of any kind (wine, beer, cocktails, coffee, tea, juice, water)
-- Children's menu items
+${excludeList.map(i => `- ${i}`).join("\n")}
 
-For each main dish, recommend a wine to pair with it. Keep the recommendation BROAD — just the grape variety or wine style (e.g. "Pinot Noir", "Chardonnay", "Shiraz", "Riesling"). Do NOT recommend specific bottles or producers unless a wine menu has been provided.
+For each dish, recommend a wine to pair with it. Keep the recommendation BROAD — just the grape variety or wine style (e.g. "Pinot Noir", "Chardonnay", "Shiraz", "Riesling"). Do NOT recommend specific bottles or producers unless a wine menu has been provided.
 
 CRITICAL RULES:
-- The "dish" field must ONLY contain MAIN COURSE food items as defined above.
-- NEVER include starters, sides, desserts, snacks, or beverages.
 - NEVER put a wine, beer, cocktail, or any beverage in the "dish" field.
-- If you are unsure whether something is a main, err on the side of EXCLUDING it.
-- NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely. The description must only contain what the food is, its ingredients, and how it is prepared.
+- If you are unsure whether something belongs in a selected course category, err on the side of EXCLUDING it.
+- NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely.
 
 Return your response as a JSON array with this exact structure (no markdown, no code fences, just raw JSON):
 [
   {
-    "dish": "The TITLE of the dish exactly as it appears on the menu (e.g. 'Moroccan Salmon', 'Beef Bourguignon', 'Chicken Milanese'). This is the dish NAME only — short, typically 1-4 words. NEVER put ingredients, descriptions, or prices here.",
+    "dish": "The TITLE of the dish exactly as it appears on the menu (e.g. 'Moroccan Salmon', 'Beef Bourguignon', 'Tiramisu'). This is the dish NAME only — short, typically 1-4 words. NEVER put ingredients, descriptions, or prices here.",
     "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price. This is SEPARATE from the dish title above.",
+    "course": "One of: starter, main, dessert",
     "wineType": "The grape variety or wine style (e.g., Pinot Noir, Chardonnay, Riesling, Shiraz)",
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
-    "bottleSuggestion": "When NO wine menu is provided: a very short descriptive style (2-4 words) like 'Dry White', 'Soft Fruity Red', 'Crisp Light White', 'Bold Full-Bodied Red', 'Off-Dry Aromatic White'. Do NOT put grape names here — those go in wineType/altWineType. When a wine menu IS provided: the exact bottle name and producer from the wine list.",
-    "producer": "The winery/producer name (e.g. 'Penfolds', 'Cloudy Bay', 'Château Margaux'). Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
+    "bottleSuggestion": "When NO wine menu is provided: a very short descriptive style (2-4 words) like 'Dry White', 'Soft Fruity Red', 'Crisp Light White', 'Bold Full-Bodied Red', 'Off-Dry Aromatic White', 'Sweet Dessert Wine'. Do NOT put grape names here — those go in wineType/altWineType. When a wine menu IS provided: the exact bottle name and producer from the wine list.",
+    "producer": "The winery/producer name. Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
     "rationale": "1-2 sentences explaining why this wine style pairs well with this dish",
     "producer": null,
     "vivinoRating": null,
@@ -66,10 +89,11 @@ Return your response as a JSON array with this exact structure (no markdown, no 
 ]
 
 Additional rules:
-- The "dish" field must be the DISH TITLE/NAME only (e.g. "Grilled Salmon", "Lamb Shank", "Pasta Carbonara"). It should be short (1-5 words). NEVER put a list of ingredients in the "dish" field. The dish title should be in the original language as it appears on the menu.
-- The "description" field is separate — this is where you describe the dish in English: what it is, key ingredients, and how it is prepared (1-2 sentences).
-- ALWAYS translate dish descriptions to English. If the menu is in a foreign language, the description must still be in English.
-- NEVER include the dish price in the description field. The description should only contain what the dish is, its ingredients, and preparation method.
+- The "dish" field must be the DISH TITLE/NAME only (1-5 words). NEVER put ingredients in the "dish" field. The dish title should be in the original language as it appears on the menu.
+- The "description" field is separate — describe the dish in English: what it is, key ingredients, and how it is prepared (1-2 sentences).
+- ALWAYS translate dish descriptions to English.
+- NEVER include the dish price in the description field.
+- The "course" field MUST be set correctly: "starter", "main", or "dessert".
 - Evaluate each dish INDEPENDENTLY using this structured approach:
   1. IDENTIFY THE PRIMARY PROTEIN OR MAIN INGREDIENT FIRST. This is the most important factor. Fish and seafood almost always pair better with white wines. Red meat pairs with red wines. Poultry and pork are flexible.
   2. THEN consider the preparation method (grilled, poached, fried, braised, etc.) and how it affects weight and flavour intensity.
@@ -77,25 +101,29 @@ Additional rules:
   4. MATCH the weight of the wine to the weight of the dish. Light dishes get light wines, heavy dishes get full-bodied wines.
 
   COMMON PAIRING PRINCIPLES — follow these closely:
-  - Salmon → white or light rosé (Chardonnay, Pinot Grigio, dry Rosé, Viognier). Only pair salmon with a red if it is heavily spiced/blackened AND served with red wine sauce. Even spicy salmon (e.g. Moroccan, harissa) pairs better with an aromatic white (Gewürztraminer, Viognier, off-dry Riesling) than a red.
-  - White fish (cod, sea bass, halibut) → crisp whites (Sauvignon Blanc, Chablis, Vermentino, Albariño)
+  - Salmon → white or light rosé (Chardonnay, Pinot Grigio, dry Rosé, Viognier). Even spicy salmon pairs better with an aromatic white than a red.
+  - White fish → crisp whites (Sauvignon Blanc, Chablis, Vermentino, Albariño)
   - Shellfish/crustaceans → Champagne, Muscadet, Chablis, Sauvignon Blanc
   - Lamb → Cabernet Sauvignon, Syrah/Shiraz, Tempranillo, Rioja
   - Beef steak → Cabernet Sauvignon, Malbec, Shiraz
   - Pork → Pinot Noir, Chenin Blanc, Riesling (depends on preparation)
   - Chicken → highly flexible, match to the sauce/preparation rather than the protein
   - Pasta → match to the sauce, not the pasta itself
-  - Spicy food → off-dry Riesling, Gewürztraminer, Viognier, Torrontés (NOT tannic reds — tannins amplify heat)
+  - Spicy food → off-dry Riesling, Gewürztraminer, Viognier, Torrontés (NOT tannic reds)
+  - Chocolate desserts → Port, Brachetto d'Acqui, or a rich red like Zinfandel
+  - Fruit desserts → Moscato d'Asti, late-harvest Riesling, Sauternes
+  - Cream/custard desserts → Sauternes, Tokaji, Muscat de Beaumes-de-Venise
 
 - It is perfectly fine to recommend the same wine for multiple dishes if it is genuinely the best pairing for each.
 - Do NOT try to vary your recommendations just for the sake of variety — accuracy matters more than diversity.
-- Think carefully about each pairing. A bad recommendation is worse than a repetitive one. Quality over variety.
-- altWineType: A mainstream, widely available wine alternative that would also pair well with the dish. Use well-known international grape varieties (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon, Pinot Noir, Chardonnay, Shiraz, Pinot Grigio, Riesling). This helps when the primary recommendation is a regional/niche grape that may not be available. If the primary recommendation is already mainstream, set altWineType to a different mainstream option, or null if there is no good alternative.
-- vivinoRating: The Vivino community rating for the recommended wine (a number from 1.0 to 5.0, e.g. 4.2). Vivino is the world's largest wine rating platform. Use your best knowledge to estimate the rating. Only include if a specific bottle is recommended (i.e. when a wine menu is provided). Otherwise set to null.
-- robertParkerScore: The Robert Parker / Wine Advocate score for the recommended wine (integer out of 100, e.g. 92). Only include if you are confident the wine has been rated. Set to null otherwise.
-- retailPrice: Only include if a specific bottle is recommended. Otherwise set to null.
-- restaurantPriceGlass: The per-glass price listed on the restaurant's wine menu, if available. Include the currency symbol (e.g. "$12", "£8", "€10"). Set to null if no glass price is listed or no wine menu was provided.
-- restaurantPriceBottle: The per-bottle price listed on the restaurant's wine menu, if available. Include the currency symbol (e.g. "$45", "£32", "€28"). Set to null if no bottle price is listed or no wine menu was provided.`;
+- Think carefully about each pairing. Quality over variety.
+- altWineType: A mainstream, widely available alternative. If the primary is already mainstream, set to a different mainstream option, or null.
+- vivinoRating: Vivino rating (1.0-5.0). Only if a specific bottle is recommended. Otherwise null.
+- robertParkerScore: Robert Parker score (out of 100). Only if confident. Otherwise null.
+- retailPrice: Only if a specific bottle is recommended. Otherwise null.
+- restaurantPriceGlass: Per-glass price from wine menu with currency symbol. Null if not listed or no wine menu.
+- restaurantPriceBottle: Per-bottle price from wine menu with currency symbol. Null if not listed or no wine menu.`;
+}
 
 const WINE_MENU_ADDENDUM = `
 
@@ -211,6 +239,7 @@ interface WineMenuOptions {
   currency?: string;
   minPrice?: number;
   maxPrice?: number;
+  courses?: string[];
 }
 
 export async function getWinePairings(
@@ -223,7 +252,8 @@ export async function getWinePairings(
   ];
 
   const currency = wineMenu?.currency || "USD";
-  let prompt = BASE_PROMPT + `\n- Use ${currency} as the currency for all prices.`;
+  const courses = wineMenu?.courses || ["mains"];
+  let prompt = buildBasePrompt(courses) + `\n- Use ${currency} as the currency for all prices.`;
 
   // Add wine menu if provided
   if (wineMenu?.wineMenuBase64 && wineMenu.wineMenuMimeType) {
@@ -267,12 +297,13 @@ export async function getWinePairingsFromUrl(
   wineUrl?: string,
   currency?: string,
   minPrice?: number,
-  maxPrice?: number
+  maxPrice?: number,
+  courses?: string[]
 ): Promise<WinePairing[]> {
   const foodBlock = await fetchUrlAsContentBlock(url);
 
   const contentBlocks: ContentBlockParam[] = [foodBlock];
-  let prompt = BASE_PROMPT + `\n- Use ${currency || "USD"} as the currency for all prices.`;
+  let prompt = buildBasePrompt(courses || ["mains"]) + `\n- Use ${currency || "USD"} as the currency for all prices.`;
 
   if (wineUrl) {
     const wineBlock = await fetchUrlAsContentBlock(wineUrl);
