@@ -37,6 +37,7 @@ function getCurrencyInfo(): { code: string; symbol: string } {
 export default function Home() {
   const [state, setState] = useState<AppState>("idle");
   const [pairings, setPairings] = useState<WinePairing[]>([]);
+  const [restaurantName, setRestaurantName] = useState<string | null>(null);
   const [error, setError] = useState<string>("");
 
   const [foodFile, setFoodFile] = useState<File | null>(null);
@@ -104,6 +105,7 @@ export default function Home() {
       }
 
       setPairings(data.pairings);
+      setRestaurantName(data.restaurantName || null);
       setState("results");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -114,6 +116,7 @@ export default function Home() {
   const handleReset = () => {
     setState("idle");
     setPairings([]);
+    setRestaurantName(null);
     setError("");
     setFoodFile(null);
     setFoodUrl("");
@@ -319,7 +322,7 @@ export default function Home() {
 
         {/* Results */}
         {state === "results" && (
-          <MenuResults pairings={pairings} onReset={handleReset} />
+          <MenuResults pairings={pairings} restaurantName={restaurantName} onReset={handleReset} />
         )}
       </div>
     </main>

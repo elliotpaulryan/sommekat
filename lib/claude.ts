@@ -67,8 +67,10 @@ CRITICAL RULES:
 - If you are unsure whether something belongs in a selected course category, err on the side of EXCLUDING it.
 - NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely.
 
-Return your response as a JSON array with this exact structure (no markdown, no code fences, just raw JSON):
-[
+Return your response as a JSON object with this exact structure (no markdown, no code fences, just raw JSON):
+{
+  "restaurantName": "The name of the restaurant if it appears on the food menu. If not found, use null.",
+  "pairings": [
   {
     "dish": "The TITLE of the dish exactly as it appears on the menu (e.g. 'Moroccan Salmon', 'Beef Bourguignon', 'Tiramisu'). This is the dish NAME only — short, typically 1-4 words. NEVER put ingredients, descriptions, or prices here.",
     "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price. This is SEPARATE from the dish title above.",
@@ -86,7 +88,8 @@ Return your response as a JSON array with this exact structure (no markdown, no 
     "restaurantPriceBottle": null,
     "outsidePriceRange": false
   }
-]
+  ]
+}
 
 Additional rules:
 - The "dish" field must be the DISH TITLE/NAME only (1-5 words). NEVER put ingredients in the "dish" field. The dish title should be in the original language as it appears on the menu.
@@ -219,17 +222,38 @@ async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
   };
 }
 
-function parseResponse(text: string): WinePairing[] {
+interface ParsedResponse {
+  restaurantName: string | null;
+  pairings: WinePairing[];
+}
+
+function parseResponse(text: string): ParsedResponse {
   console.log("Claude response:", text.slice(0, 500));
   const cleaned = text.replace(/```json?\n?/g, "").replace(/```\n?/g, "").trim();
+
+  // Try parsing as object first (new format)
+  const objStart = cleaned.indexOf("{");
+  const objEnd = cleaned.lastIndexOf("}");
+  if (objStart !== -1 && objEnd !== -1) {
+    try {
+      const parsed = JSON.parse(cleaned.slice(objStart, objEnd + 1));
+      if (parsed.pairings && Array.isArray(parsed.pairings)) {
+        return { restaurantName: parsed.restaurantName || null, pairings: parsed.pairings };
+      }
+    } catch {
+      // Fall through to array parsing
+    }
+  }
+
+  // Fallback: parse as array (backward compat)
   const start = cleaned.indexOf("[");
   const end = cleaned.lastIndexOf("]");
   if (start === -1 || end === -1) {
     throw new Error(
-      `No JSON array found in response. Claude said: "${text.slice(0, 300)}"`
+      `No JSON found in response. Claude said: "${text.slice(0, 300)}"`
     );
   }
-  return JSON.parse(cleaned.slice(start, end + 1));
+  return { restaurantName: null, pairings: JSON.parse(cleaned.slice(start, end + 1)) };
 }
 
 interface WineMenuOptions {
@@ -246,7 +270,7 @@ export async function getWinePairings(
   fileBase64: string,
   mimeType: string,
   wineMenu?: WineMenuOptions
-): Promise<WinePairing[]> {
+): Promise<ParsedResponse> {
   const contentBlocks: ContentBlockParam[] = [
     makeContentBlock(fileBase64, mimeType),
   ];
@@ -299,7 +323,7 @@ export async function getWinePairingsFromUrl(
   minPrice?: number,
   maxPrice?: number,
   courses?: string[]
-): Promise<WinePairing[]> {
+): Promise<ParsedResponse> {
   const foodBlock = await fetchUrlAsContentBlock(url);
 
   const contentBlocks: ContentBlockParam[] = [foodBlock];

@@ -4,6 +4,7 @@ import type { WinePairing } from "@/lib/claude";
 
 interface MenuResultsProps {
   pairings: WinePairing[];
+  restaurantName: string | null;
   onReset: () => void;
 }
 
@@ -99,7 +100,7 @@ const COURSE_LABELS: Record<string, string> = {
   dessert: "Desserts",
 };
 
-export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
+export default function MenuResults({ pairings, restaurantName, onReset }: MenuResultsProps) {
   const grouped = COURSE_ORDER
     .map((course) => ({
       course,
@@ -119,7 +120,9 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl font-extrabold text-red-900">
-            Your Wine Pairings
+            {restaurantName
+              ? <>Your Wine Pairings for <span className="underline">{restaurantName}</span></>
+              : "Your Wine Pairings"}
           </h2>
           <p className="text-red-900/80 mt-1 font-bold">
             {pairings.length} dish{pairings.length !== 1 ? "es" : ""} found

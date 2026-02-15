@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       }
 
       const parsedCourses = Array.isArray(courses) ? courses : ["mains"];
-      const pairings = await getWinePairingsFromUrl(url, wineUrl || undefined, currency || "USD", minPrice, maxPrice, parsedCourses);
-      return NextResponse.json({ pairings });
+      const result = await getWinePairingsFromUrl(url, wineUrl || undefined, currency || "USD", minPrice, maxPrice, parsedCourses);
+      return NextResponse.json({ pairings: result.pairings, restaurantName: result.restaurantName });
     }
 
     // Handle file upload (multipart form data)
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     const coursesField = formData.get("courses") as string | null;
     const parsedCourses = coursesField ? JSON.parse(coursesField) : ["mains"];
 
-    const pairings = await getWinePairings(base64, file.type, {
+    const result = await getWinePairings(base64, file.type, {
       wineMenuBase64: wineBase64,
       wineMenuMimeType: wineMimeType,
       wineMenuUrl: wineUrlValue,
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
       courses: parsedCourses,
     });
 
-    return NextResponse.json({ pairings });
+    return NextResponse.json({ pairings: result.pairings, restaurantName: result.restaurantName });
   } catch (error: unknown) {
     console.error("Error processing menu:", error);
     const message =
