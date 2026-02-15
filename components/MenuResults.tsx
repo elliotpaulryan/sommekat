@@ -121,7 +121,7 @@ export default function MenuResults({ pairings, restaurantName, onReset }: MenuR
         <div>
           <h2 className="text-2xl font-extrabold text-red-900">
             {restaurantName
-              ? <>Your Wine Pairings for <span className="underline">{restaurantName}</span></>
+              ? <><span className="font-bold">Your Wine Pairings for</span> <span className="font-black">{restaurantName}</span></>
               : "Your Wine Pairings"}
           </h2>
           <p className="text-red-900/80 mt-1 font-bold">
