@@ -85,8 +85,11 @@ function getWineColor(wineType: string): string {
 
 function formatPrice(price: string | null): string {
   if (!price) return "—";
-  // If it has a decimal with only one digit (e.g. $27.5), pad to two decimals
-  return price.replace(/(\d+\.\d)(?!\d)/, "$10");
+  // Remove .00 from whole numbers (e.g. $27.00 → $27)
+  let result = price.replace(/(\d)\.00(?!\d)/g, "$1");
+  // Pad single-decimal prices to two decimals (e.g. $27.5 → $27.50)
+  result = result.replace(/(\d+\.\d)(?!\d)/, "$10");
+  return result;
 }
 
 const COURSE_ORDER = ["starter", "main", "dessert"] as const;
