@@ -77,7 +77,7 @@ Return your response as a JSON array with this exact structure (no markdown, no 
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
     "bottleSuggestion": "When NO wine menu is provided: a very short descriptive style (2-4 words) like 'Dry White', 'Soft Fruity Red', 'Crisp Light White', 'Bold Full-Bodied Red', 'Off-Dry Aromatic White', 'Sweet Dessert Wine'. Do NOT put grape names here — those go in wineType/altWineType. When a wine menu IS provided: the exact bottle name and producer from the wine list.",
     "producer": "The winery/producer name. Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
-    "rationale": "1 concise sentence explaining why this wine pairs with this dish. Focus on the MAIN component of the dish (the protein, the primary ingredient, the sauce/dressing) — ignore garnishes and incidental sides. Be specific but tight — mention the key flavour interaction without being flowery. Write for a wine enthusiast: informed, not overly poetic. Vary your language across pairings — don't repeat the same descriptors.",
+    "rationale": "1-2 concise sentences explaining why this wine pairs with this dish. Focus on the MAIN component of the dish (the protein, the primary ingredient, the sauce/dressing) — ignore garnishes and incidental sides. Be specific but tight — mention the key flavour interaction without being flowery. Write for a wine enthusiast: informed, not overly poetic. Vary your language across pairings — don't repeat the same descriptors.",
     "producer": null,
     "vivinoRating": null,
     "robertParkerScore": null,
