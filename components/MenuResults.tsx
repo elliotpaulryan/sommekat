@@ -136,7 +136,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
         </div>
         <button
           onClick={onReset}
-          className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 shadow-sm transition-all hover:bg-stone-50 hover:border-stone-400"
+          className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-medium text-stone-700 shadow-sm transition-all hover:bg-stone-50 hover:border-stone-400 cursor-pointer"
         >
           <svg
             className="w-4 h-4"
