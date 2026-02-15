@@ -200,7 +200,7 @@ export default function Home() {
 
             {/* Course selection */}
             <div className="mx-auto max-w-3xl mt-6 text-center">
-              <p className="text-sm text-red-900/70 font-medium mb-2">Mains are always included</p>
+              <p className="text-sm text-red-900 font-bold mb-2">Mains are always included</p>
               <div className="flex items-center justify-center gap-3">
                 <span className="text-sm font-bold text-red-900">Optional Inclusions:</span>
                 {[
