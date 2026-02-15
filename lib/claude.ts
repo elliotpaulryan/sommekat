@@ -77,7 +77,7 @@ Return your response as a JSON array with this exact structure (no markdown, no 
     "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
     "bottleSuggestion": "When NO wine menu is provided: a very short descriptive style (2-4 words) like 'Dry White', 'Soft Fruity Red', 'Crisp Light White', 'Bold Full-Bodied Red', 'Off-Dry Aromatic White', 'Sweet Dessert Wine'. Do NOT put grape names here — those go in wineType/altWineType. When a wine menu IS provided: the exact bottle name and producer from the wine list.",
     "producer": "The winery/producer name. Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
-    "rationale": "1-2 sentences explaining why this wine style pairs well with this dish",
+    "rationale": "1-2 sentences explaining why this wine pairs with this dish. Be SPECIFIC about the interaction between flavours — mention particular tasting notes, textures, and how the wine complements or contrasts specific elements of the dish. Write as if speaking to a wine enthusiast: knowledgeable but not overly technical. IMPORTANT: Vary your language — NEVER use the phrase 'cuts through'. Avoid repeating the same descriptors across pairings. Use vivid, varied vocabulary (e.g. 'tempers the heat', 'echoes the herbaceous notes', 'mirrors the dish's earthiness', 'lifts the richness', 'bridges the smoky char with bright fruit').",
     "producer": null,
     "vivinoRating": null,
     "robertParkerScore": null,
