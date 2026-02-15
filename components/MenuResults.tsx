@@ -124,6 +124,15 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
           <p className="text-red-900/80 mt-1 font-bold">
             {pairings.length} dish{pairings.length !== 1 ? "es" : ""} found
           </p>
+          {hasCourseTags && sections.length > 1 && (
+            <div className="mt-1 space-y-0.5">
+              {sections.map((s) => (
+                <p key={s.course} className="text-sm text-red-900/60 font-medium">
+                  {s.items.length} {s.label.toLowerCase()}
+                </p>
+              ))}
+            </div>
+          )}
         </div>
         <button
           onClick={onReset}
