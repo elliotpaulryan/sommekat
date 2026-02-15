@@ -6,7 +6,7 @@ const julius = Julius_Sans_One({ weight: "400", subsets: ["latin"] });
 const titleFont = Pacifico({ weight: "400", subsets: ["latin"], variable: "--font-baloo" });
 
 export const metadata: Metadata = {
-  title: "SommeKat — AI Menu & Wine Pairing",
+  title: "SommeKat Wine Pairer",
   description:
     "Upload a restaurant menu and get AI-powered wine pairing recommendations for every dish.",
 };
