@@ -118,9 +118,9 @@ Additional rules:
 - Do NOT try to vary your recommendations just for the sake of variety — accuracy matters more than diversity.
 - Think carefully about each pairing. Quality over variety.
 - altWineType: A mainstream, widely available alternative. If the primary is already mainstream, set to a different mainstream option, or null.
-- vivinoRating: Vivino rating (1.0-5.0). When a specific bottle is recommended, you MUST provide your best estimate of its Vivino rating — do not leave this null. Only null when no wine menu is provided and the recommendation is a general style.
+- vivinoRating: Vivino rating (1.0-5.0). When a specific bottle is recommended, you MUST provide your best estimate. Only use null when no wine menu is provided and the recommendation is a general style. If you genuinely cannot estimate the rating for a specific bottle, use -1 as a sentinel value.
 - robertParkerScore: Robert Parker score (out of 100). Only if confident. Otherwise null.
-- retailPrice: Typical retail price for this bottle with currency symbol. When a specific bottle is recommended, you MUST provide your best estimate of the retail price — do not leave this null. Only null when no wine menu is provided.
+- retailPrice: Typical retail price for this bottle with currency symbol. When a specific bottle is recommended, you MUST provide your best estimate. Only use null when no wine menu is provided. If you genuinely cannot estimate the price for a specific bottle, use "Not found".
 - restaurantPriceGlass: Per-glass price from wine menu with currency symbol. Null if not listed or no wine menu.
 - restaurantPriceBottle: Per-bottle price from wine menu with currency symbol. Null if not listed or no wine menu.`;
 }

@@ -252,7 +252,7 @@ export default function MenuResults({ pairings, onReset }: MenuResultsProps) {
                       >
                         <p className="text-[10px] font-bold uppercase tracking-wider text-purple-700">Vivino</p>
                         <p className="text-base font-bold text-purple-900 mt-0.5">
-                          {pairing.vivinoRating != null ? `${pairing.vivinoRating}/5` : "—"}
+                          {pairing.vivinoRating != null && pairing.vivinoRating > 0 ? `${pairing.vivinoRating}/5` : "Not found"}
                         </p>
                       </a>
                       <div className="rounded-lg bg-green-50 border border-green-200 p-2 text-center">
