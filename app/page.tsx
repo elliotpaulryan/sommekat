@@ -199,40 +199,38 @@ export default function Home() {
             </div>
 
             {/* Course selection */}
-            <div className="mx-auto max-w-3xl mt-6 flex items-center justify-center gap-3">
-              <span className="text-sm font-bold text-red-900">Include:</span>
-              {[
-                { id: "mains", label: "Mains" },
-                { id: "starters", label: "Starters" },
-                { id: "desserts", label: "Desserts" },
-              ].map(({ id, label }) => {
-                const isSelected = courses.includes(id);
-                const isMains = id === "mains";
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => {
-                      if (isMains) return;
-                      setCourses((prev) =>
-                        prev.includes(id)
-                          ? prev.filter((c) => c !== id)
-                          : [...prev, id]
-                      );
-                    }}
-                    className={[
-                      "rounded-full px-4 py-1.5 text-sm font-bold transition-all border-2",
-                      isMains
-                        ? "bg-wine/40 text-white/80 border-wine/30 cursor-default"
-                        : isSelected
-                          ? "bg-wine text-white border-wine shadow-md cursor-pointer"
-                          : "bg-white/80 text-wine border-wine/30 hover:border-wine/60 cursor-pointer",
-                    ].join(" ")}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
+            <div className="mx-auto max-w-3xl mt-6 text-center">
+              <p className="text-sm text-red-900/70 font-medium mb-2">Mains are always included</p>
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-sm font-bold text-red-900">Optional Inclusions:</span>
+                {[
+                  { id: "starters", label: "Starters" },
+                  { id: "desserts", label: "Desserts" },
+                ].map(({ id, label }) => {
+                  const isSelected = courses.includes(id);
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => {
+                        setCourses((prev) =>
+                          prev.includes(id)
+                            ? prev.filter((c) => c !== id)
+                            : [...prev, id]
+                        );
+                      }}
+                      className={[
+                        "rounded-full px-4 py-1.5 text-sm font-bold transition-all border-2 cursor-pointer",
+                        isSelected
+                          ? "bg-wine text-white border-wine shadow-md"
+                          : "bg-white/80 text-wine border-wine/30 hover:border-wine/60",
+                      ].join(" ")}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Price range slider — only when wine menu is provided */}
