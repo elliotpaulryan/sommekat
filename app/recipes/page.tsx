@@ -87,13 +87,31 @@ export default function RecipesPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-6 pt-10 pb-10">
+      {/* Tab bar */}
+      <div className="mx-auto max-w-5xl px-6 pt-4">
+        <div className="flex gap-1 rounded-xl bg-wine-dark/60 p-1 max-w-xs mx-auto">
+          <a href="/" className={[
+            "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all no-underline",
+            "text-burgundy-200 hover:text-white hover:bg-white/10",
+          ].join(" ")}>
+            🍽 Restaurant Menu
+          </a>
+          <span className={[
+            "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all",
+            "bg-white text-wine shadow-sm",
+          ].join(" ")}>
+            🍳 Recipes
+          </span>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-3xl px-6 pt-8 pb-10">
 
         {/* Page title */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-extrabold text-red-900 mb-2">🍳 Recipe Wine Pairing</h2>
+          <h2 className="text-2xl font-extrabold text-red-900 mb-2">Recipe Wine Pairing</h2>
           <p className="text-red-900/80 font-bold text-base max-w-lg mx-auto">
-            Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your cooking.
+            Cooking at home? Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your dish.
           </p>
         </div>
 
@@ -217,12 +235,6 @@ export default function RecipesPage() {
               </div>
             ))}
 
-            {/* Back to menu pairing */}
-            <div className="text-center pt-2">
-              <a href="/" className="text-sm text-red-900/70 font-medium hover:text-red-900 transition-colors no-underline">
-                ← Back to restaurant menu pairing
-              </a>
-            </div>
           </div>
         )}
       </div>

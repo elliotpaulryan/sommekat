@@ -168,7 +168,25 @@ export default function Home() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-5xl px-6 pt-12 sm:pt-10 pb-6">
+      {/* Tab bar */}
+      <div className="mx-auto max-w-5xl px-6 pt-4">
+        <div className="flex gap-1 rounded-xl bg-wine-dark/60 p-1 max-w-xs mx-auto">
+          <span className={[
+            "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all",
+            "bg-white text-wine shadow-sm",
+          ].join(" ")}>
+            🍽 Restaurant Menu
+          </span>
+          <a href="/recipes" className={[
+            "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all no-underline",
+            "text-burgundy-200 hover:text-white hover:bg-white/10",
+          ].join(" ")}>
+            🍳 Recipes
+          </a>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-6 pt-8 sm:pt-6 pb-6">
         {/* Tagline — only show on idle/error */}
         {(state === "idle" || state === "error") && (
           <div className="text-center mb-6">
@@ -176,17 +194,6 @@ export default function Home() {
               Upload a photo or PDF of any restaurant menu and SommeKat
               will recommend the ideal wine pairing for each item.
             </p>
-            <a
-              href="/recipes"
-              className="inline-block mt-4 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-150 cursor-pointer no-underline"
-              style={{
-                background: "linear-gradient(180deg, #9b4d57 0%, #722F37 100%)",
-                border: "1px solid #5a1f26",
-                boxShadow: "0 2px 0 #4a1520, 0 4px 8px rgba(0,0,0,0.25)",
-              }}
-            >
-              🍳 Cooking at home? Click here for recipe pairing
-            </a>
           </div>
         )}
 
@@ -216,7 +223,7 @@ export default function Home() {
 
             {/* Course selection */}
             <div className="mx-auto max-w-3xl mt-6 text-center">
-              <p className="text-sm text-red-900 font-bold mb-2">Mains are always included</p>
+              <p className="text-sm text-red-900 font-bold mb-2">Mains are always paired</p>
               <div className="flex items-center justify-center gap-3">
                 <span className="text-sm font-bold text-red-900">Optional Inclusions:</span>
                 {[
