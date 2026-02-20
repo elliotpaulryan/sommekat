@@ -66,25 +66,25 @@ CRITICAL RULES:
 - If you are unsure whether something belongs in a selected course category, err on the side of EXCLUDING it.
 - NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely.
 
-Return your response as a JSON object (no markdown, no code fences, raw JSON only):
+Return your response as a JSON object (no markdown, no code fences, raw JSON only). OMIT any field whose value would be null — do not include null fields at all.
 {
-  "restaurantName": string | null,
-  "menuCurrency": "ISO code detected from menu prices (e.g. 'GBP', 'EUR', 'AUD') or null if not found",
+  "restaurantName": string (omit if not found),
+  "menuCurrency": "ISO code detected from menu prices (e.g. 'GBP', 'EUR', 'AUD') — omit if not found",
   "pairings": [
   {
     "dish": "Dish title only — exactly as on menu, 1-5 words, original language. NEVER ingredients or prices.",
-    "description": "1-2 sentences in English: what it is, key ingredients, preparation. No prices.",
+    "desc": "1-2 sentences in English: what it is, key ingredients, preparation. No prices.",
     "course": "starter | main | dessert",
-    "wineType": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
-    "altWineType": "Mainstream alternative or null",
-    "bottleSuggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: exact bottle name from list.",
-    "producer": "Winery name if recommending a specific bottle, else null",
+    "wine": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
+    "altWine": "Mainstream alternative — omit if none",
+    "suggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: exact bottle name from list.",
+    "producer": "Winery name if recommending a specific bottle — omit if not applicable",
     "rationale": "1-2 concise sentences on why this wine pairs with the dish's main component. Lead with the pairing logic, not 'the dish needs/demands'. Be slightly technical (e.g. residual sugar tempering heat, tannins binding protein, high acid cutting fat). Vary language across pairings.",
-    "vivinoRating": "number 1.0-5.0 if specific bottle recommended, -1 if unknown, else null",
-    "retailPrice": "Typical retail price with currency symbol if specific bottle, 'Not found' if unknown, else null",
-    "restaurantPriceGlass": "Per-glass price from wine menu with symbol, or null",
-    "restaurantPriceBottle": "Per-bottle price from wine menu with symbol, or null",
-    "outsidePriceRange": false
+    "vivino": "number 1.0-5.0 if specific bottle recommended, -1 if unknown — omit if no wine menu",
+    "retail": "Retail price with currency symbol if specific bottle, 'Not found' if unknown — omit if no wine menu",
+    "glassPrice": "Per-glass price from wine menu with symbol — omit if not listed",
+    "bottlePrice": "Per-bottle price from wine menu with symbol — omit if not listed",
+    "outOfRange": true (only include this field when true — omit when false)
   }
   ]
 }
@@ -111,14 +111,14 @@ Rules:
   - Cream/custard desserts → Sauternes, Tokaji, Muscat de Beaumes-de-Venise
 
 - Same wine may be recommended for multiple dishes if genuinely the best pairing — accuracy over variety.
-- altWineType: different mainstream option; null if no good alternative.
-- vivinoRating: MUST provide best estimate for any specific bottle; -1 if truly unknown; null only when no wine menu.
-- retailPrice: MUST provide best estimate for any specific bottle; "Not found" if truly unknown; null only when no wine menu.`;
+- altWine: different mainstream option; omit if none.
+- vivino: MUST provide best estimate for any specific bottle; -1 if truly unknown; omit only when no wine menu.
+- retail: MUST provide best estimate for any specific bottle; "Not found" if truly unknown; omit only when no wine menu.`;
 }
 
 const WINE_MENU_ADDENDUM = `
 
-A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the bottleSuggestion field, use the exact wine name and producer as listed on the wine menu. Include restaurantPriceGlass and restaurantPriceBottle from the wine menu if listed. You MUST provide vivinoRating (your best estimate, 1.0-5.0) and retailPrice (typical retail price with currency symbol) for every specific bottle — never leave these null when recommending a named wine.`;
+A wine menu has also been provided. You MUST ONLY recommend wines that appear on this wine list. Do NOT suggest any wine that is not on the list. For each dish, find the best matching wine FROM the wine menu. In the "suggestion" field, use the exact wine name and producer as listed on the wine menu. Include "glassPrice" and "bottlePrice" from the wine menu if listed. You MUST provide "vivino" (your best estimate, 1.0-5.0) and "retail" (typical retail price with currency symbol) for every specific bottle.`;
 
 function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | undefined, userCurrency: string): string {
   if (minPrice == null && maxPrice == null) return "";
@@ -217,6 +217,25 @@ interface ParsedResponse {
   pairings: WinePairing[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalisePairing(p: any): WinePairing {
+  return {
+    dish: p.dish ?? "",
+    description: p.desc ?? p.description ?? "",
+    course: p.course ?? "main",
+    wineType: p.wine ?? p.wineType ?? "",
+    altWineType: p.altWine ?? p.altWineType ?? null,
+    bottleSuggestion: p.suggestion ?? p.bottleSuggestion ?? "",
+    producer: p.producer ?? null,
+    rationale: p.rationale ?? "",
+    vivinoRating: p.vivino ?? p.vivinoRating ?? null,
+    retailPrice: p.retail ?? p.retailPrice ?? null,
+    restaurantPriceGlass: p.glassPrice ?? p.restaurantPriceGlass ?? null,
+    restaurantPriceBottle: p.bottlePrice ?? p.restaurantPriceBottle ?? null,
+    outsidePriceRange: p.outOfRange ?? p.outsidePriceRange ?? false,
+  };
+}
+
 function parseResponse(text: string): ParsedResponse {
   console.log("Claude response:", text.slice(0, 500));
   const cleaned = text.replace(/```json?\n?/g, "").replace(/```\n?/g, "").trim();
@@ -228,7 +247,11 @@ function parseResponse(text: string): ParsedResponse {
     try {
       const parsed = JSON.parse(cleaned.slice(objStart, objEnd + 1));
       if (parsed.pairings && Array.isArray(parsed.pairings)) {
-        return { restaurantName: parsed.restaurantName || null, menuCurrency: parsed.menuCurrency || null, pairings: parsed.pairings };
+        return {
+          restaurantName: parsed.restaurantName || null,
+          menuCurrency: parsed.menuCurrency || null,
+          pairings: parsed.pairings.map(normalisePairing),
+        };
       }
     } catch {
       // Fall through to array parsing
@@ -243,7 +266,7 @@ function parseResponse(text: string): ParsedResponse {
       `No JSON found in response. Claude said: "${text.slice(0, 300)}"`
     );
   }
-  return { restaurantName: null, menuCurrency: null, pairings: JSON.parse(cleaned.slice(start, end + 1)) };
+  return { restaurantName: null, menuCurrency: null, pairings: JSON.parse(cleaned.slice(start, end + 1)).map(normalisePairing) };
 }
 
 interface WineMenuOptions {
