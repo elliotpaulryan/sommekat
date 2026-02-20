@@ -527,13 +527,6 @@ export default function Home() {
                       <p className="text-base font-bold text-stone-900">{pairing.wineType}</p>
                     )}
                   </div>
-                  {pairing.altWineType && (
-                    <div className="mb-3">
-                      <span className={`inline-block rounded-full border px-3 py-0.5 text-xs font-semibold ${getWineColor(pairing.altWineType)}`}>
-                        Alt: {pairing.altWineType}
-                      </span>
-                    </div>
-                  )}
                   <p className="text-sm text-stone-700 leading-relaxed">{pairing.rationale}</p>
                   {(pairing.winery || pairing.blend) && (
                     <p className="mt-2 text-xs text-stone-500 italic">

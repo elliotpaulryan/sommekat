@@ -4,7 +4,6 @@ const client = new Anthropic();
 
 export interface RecipePairing {
   wineType: string;
-  altWineType: string | null;
   suggestion: string;
   winery: string | null;
   blend: string | null;
@@ -67,7 +66,6 @@ Return a JSON object (no markdown, no code fences, raw JSON only) with this stru
   "pairings": [
     {
       "wineType": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
-      "altWineType": "A mainstream alternative, or omit if none",
       "suggestion": "2-4 word style descriptor (e.g. 'Crisp Dry White', 'Medium-Bodied Red') — no grape names here",
       "winery": "A specific winery that makes an excellent example of this style — choose a producer that is well-regarded and widely stocked ${userCountry ? `in ${userCountry}` : "internationally"}. No vintage year.",
       "blend": "The specific wine name or cuvée from that producer (e.g. 'Reserve Chardonnay', 'Estate Pinot Noir'). No vintage year.",
@@ -80,7 +78,7 @@ Rules:
 - Focus pairing logic on the PRIMARY protein or main ingredient first, then the cooking method and dominant flavours
 - IMPORTANT: Base wine selection purely on flavour compatibility — DO NOT choose wines based on the geographic origin of the dish. An Italian recipe does not mean Italian wine; a French recipe does not mean French wine. Ignore where the dish comes from entirely.
 - The user is${userCountry ? ` in ${userCountry}` : " an international user"}. Recommend grape varieties and wine styles that are widely available there, and choose a winery whose bottles can realistically be found in a mainstream supermarket or wine retailer${userCountry ? ` in ${userCountry}` : ""}.
-- Provide 2 pairings minimum, 3 if the dish is complex or versatile
+- Always provide exactly 3 pairings, ranked from best to third-best match
 - Keep suggestions accessible — avoid extremely obscure varieties
 - For winery and blend: choose real, well-known producers stocked${userCountry ? ` in ${userCountry}` : " in the user's market"}. Do NOT include vintage year in either field.
 - If the page doesn't appear to contain a recipe, set recipeName to null`;
@@ -116,7 +114,6 @@ Rules:
     description: parsed.description ?? "",
     pairings: (parsed.pairings ?? []).map((p: any) => ({
       wineType: p.wineType ?? "",
-      altWineType: p.altWineType ?? null,
       suggestion: p.suggestion ?? "",
       winery: p.winery ?? null,
       blend: p.blend ?? null,
