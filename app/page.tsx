@@ -40,9 +40,9 @@ export default function Home() {
   const [restaurantName, setRestaurantName] = useState<string | null>(null);
   const [error, setError] = useState<string>("");
 
-  const [foodFile, setFoodFile] = useState<File | null>(null);
+  const [foodFiles, setFoodFiles] = useState<File[]>([]);
   const [foodUrl, setFoodUrl] = useState("");
-  const [wineFile, setWineFile] = useState<File | null>(null);
+  const [wineFiles, setWineFiles] = useState<File[]>([]);
   const [wineUrl, setWineUrl] = useState("");
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(SLIDER_MAX);
@@ -58,8 +58,8 @@ export default function Home() {
     setCurrencySymbol(info.symbol);
   }, []);
 
-  const hasFoodMenu = !!foodFile || !!foodUrl.trim();
-  const hasWineMenu = !!wineFile || !!wineUrl.trim();
+  const hasFoodMenu = foodFiles.length > 0 || !!foodUrl.trim();
+  const hasWineMenu = wineFiles.length > 0 || !!wineUrl.trim();
 
   const handleSubmit = async () => {
     setState("uploading");
@@ -68,13 +68,13 @@ export default function Home() {
     try {
       let response: Response;
 
-      if (foodFile) {
+      if (foodFiles.length > 0) {
         const formData = new FormData();
-        formData.append("file", foodFile);
+        foodFiles.forEach((f) => formData.append("files", f));
         formData.append("currency", userCurrency);
         formData.append("courses", JSON.stringify(courses));
-        if (wineFile) formData.append("wineFile", wineFile);
-        if (!wineFile && wineUrl.trim()) formData.append("wineUrl", wineUrl.trim());
+        wineFiles.forEach((f) => formData.append("wineFiles", f));
+        if (wineFiles.length === 0 && wineUrl.trim()) formData.append("wineUrl", wineUrl.trim());
         if (hasWineMenu) {
           formData.append("minPrice", String(minPrice));
           if (!maxIsUnlimited) formData.append("maxPrice", String(maxPrice));
@@ -118,9 +118,9 @@ export default function Home() {
     setPairings([]);
     setRestaurantName(null);
     setError("");
-    setFoodFile(null);
+    setFoodFiles([]);
     setFoodUrl("");
-    setWineFile(null);
+    setWineFiles([]);
     setWineUrl("");
   };
 
@@ -188,14 +188,14 @@ export default function Home() {
               <MenuUpload
                 label="Food Menu"
                 sublabel="Drop your food menu here"
-                onFileChange={setFoodFile}
+                onFilesChange={setFoodFiles}
                 onUrlChange={setFoodUrl}
                 isUploading={false}
               />
               <MenuUpload
                 label="Wine Menu (Optional)"
                 sublabel="Drop your wine menu here"
-                onFileChange={setWineFile}
+                onFilesChange={setWineFiles}
                 onUrlChange={setWineUrl}
                 isUploading={false}
               />

@@ -260,8 +260,7 @@ function parseResponse(text: string): ParsedResponse {
 }
 
 interface WineMenuOptions {
-  wineMenuBase64?: string;
-  wineMenuMimeType?: string;
+  wineMenuFiles?: Array<{ base64: string; mimeType: string }>;
   wineMenuUrl?: string;
   currency?: string;
   minPrice?: number;
@@ -270,24 +269,32 @@ interface WineMenuOptions {
 }
 
 export async function getWinePairings(
-  fileBase64: string,
-  mimeType: string,
+  foodFiles: Array<{ base64: string; mimeType: string }>,
   wineMenu?: WineMenuOptions
 ): Promise<ParsedResponse> {
-  const contentBlocks: ContentBlockParam[] = [
-    makeContentBlock(fileBase64, mimeType),
-  ];
+  const contentBlocks: ContentBlockParam[] = [];
+
+  if (foodFiles.length > 1) {
+    contentBlocks.push({ type: "text", text: `The food menu is provided across ${foodFiles.length} pages/images:` });
+  }
+  for (const f of foodFiles) {
+    contentBlocks.push(makeContentBlock(f.base64, f.mimeType));
+  }
 
   const currency = wineMenu?.currency || "USD";
   const courses = wineMenu?.courses || ["mains"];
   let prompt = buildBasePrompt(courses) + `\n- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${currency} and set "menuCurrency" to "${currency}".`;
 
   // Add wine menu if provided
-  if (wineMenu?.wineMenuBase64 && wineMenu.wineMenuMimeType) {
-    contentBlocks.push(
-      { type: "text", text: "The following is the restaurant's wine menu:" },
-      makeContentBlock(wineMenu.wineMenuBase64, wineMenu.wineMenuMimeType)
-    );
+  if (wineMenu?.wineMenuFiles && wineMenu.wineMenuFiles.length > 0) {
+    if (wineMenu.wineMenuFiles.length > 1) {
+      contentBlocks.push({ type: "text", text: `The wine menu is provided across ${wineMenu.wineMenuFiles.length} pages/images:` });
+    } else {
+      contentBlocks.push({ type: "text", text: "The following is the restaurant's wine menu:" });
+    }
+    for (const f of wineMenu.wineMenuFiles) {
+      contentBlocks.push(makeContentBlock(f.base64, f.mimeType));
+    }
     prompt += WINE_MENU_ADDENDUM;
     prompt += buildPriceRangePrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
   } else if (wineMenu?.wineMenuUrl) {

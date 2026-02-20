@@ -72,34 +72,36 @@ export async function POST(request: NextRequest) {
 
     // Handle file upload (multipart form data)
     const formData = await request.formData();
-    const file = formData.get("file") as File | null;
+    const foodFiles = formData.getAll("files") as File[];
 
-    if (!file) {
+    if (foodFiles.length === 0) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    const fileError = validateFile(file, "Food menu");
-    if (fileError) {
-      return NextResponse.json({ error: fileError }, { status: 400 });
+    for (const file of foodFiles) {
+      const fileError = validateFile(file, "Food menu");
+      if (fileError) return NextResponse.json({ error: fileError }, { status: 400 });
     }
 
-    const base64 = await fileToBase64(file);
+    const foodFileData = await Promise.all(
+      foodFiles.map(async (f) => ({ base64: await fileToBase64(f), mimeType: f.type || "image/jpeg" }))
+    );
 
-    // Handle optional wine menu (file or URL)
-    const wineFileUpload = formData.get("wineFile") as File | null;
+    // Handle optional wine menu (files or URL)
+    const wineFileUploads = formData.getAll("wineFiles") as File[];
     const wineUrlField = formData.get("wineUrl") as string | null;
 
-    let wineBase64: string | undefined;
-    let wineMimeType: string | undefined;
+    let wineFileData: Array<{ base64: string; mimeType: string }> | undefined;
     let wineUrlValue: string | undefined;
 
-    if (wineFileUpload) {
-      const wineError = validateFile(wineFileUpload, "Wine menu");
-      if (wineError) {
-        return NextResponse.json({ error: wineError }, { status: 400 });
+    if (wineFileUploads.length > 0) {
+      for (const f of wineFileUploads) {
+        const wineError = validateFile(f, "Wine menu");
+        if (wineError) return NextResponse.json({ error: wineError }, { status: 400 });
       }
-      wineBase64 = await fileToBase64(wineFileUpload);
-      wineMimeType = wineFileUpload.type;
+      wineFileData = await Promise.all(
+        wineFileUploads.map(async (f) => ({ base64: await fileToBase64(f), mimeType: f.type || "image/jpeg" }))
+      );
     } else if (wineUrlField) {
       wineUrlValue = wineUrlField;
     }
@@ -110,9 +112,8 @@ export async function POST(request: NextRequest) {
     const coursesField = formData.get("courses") as string | null;
     const parsedCourses = coursesField ? JSON.parse(coursesField) : ["mains"];
 
-    const result = await getWinePairings(base64, file.type, {
-      wineMenuBase64: wineBase64,
-      wineMenuMimeType: wineMimeType,
+    const result = await getWinePairings(foodFileData, {
+      wineMenuFiles: wineFileData,
       wineMenuUrl: wineUrlValue,
       currency: currencyField || "USD",
       minPrice: minPriceField ? Number(minPriceField) : undefined,
