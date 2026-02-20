@@ -11,7 +11,6 @@ export interface WinePairing {
   producer: string | null;
   rationale: string;
   vivinoRating: number | null;
-  robertParkerScore: number | null;
   retailPrice: string | null;
   restaurantPriceGlass: string | null;
   restaurantPriceBottle: string | null;
@@ -67,37 +66,30 @@ CRITICAL RULES:
 - If you are unsure whether something belongs in a selected course category, err on the side of EXCLUDING it.
 - NEVER include prices (e.g. "€14", "$25", "12€", "28.00") in the "dish" or "description" fields. Strip all prices completely.
 
-Return your response as a JSON object with this exact structure (no markdown, no code fences, just raw JSON):
+Return your response as a JSON object (no markdown, no code fences, raw JSON only):
 {
-  "restaurantName": "The name of the restaurant if it appears on the food menu. If not found, use null.",
-  "menuCurrency": "The currency used on the menu (detected from price symbols/codes on the food or wine menu, e.g. 'GBP', 'EUR', 'USD', 'AUD'). If no prices are visible, use null.",
+  "restaurantName": string | null,
+  "menuCurrency": "ISO code detected from menu prices (e.g. 'GBP', 'EUR', 'AUD') or null if not found",
   "pairings": [
   {
-    "dish": "The TITLE of the dish exactly as it appears on the menu (e.g. 'Moroccan Salmon', 'Beef Bourguignon', 'Tiramisu'). This is the dish NAME only — short, typically 1-4 words. NEVER put ingredients, descriptions, or prices here.",
-    "description": "A short description of the dish in English — what it is, key ingredients, and how it is prepared (1-2 sentences). NEVER include the price. This is SEPARATE from the dish title above.",
-    "course": "One of: starter, main, dessert",
-    "wineType": "The grape variety or wine style (e.g., Pinot Noir, Chardonnay, Riesling, Shiraz)",
-    "altWineType": "A widely available mainstream alternative (e.g. Merlot, Sauvignon Blanc, Cabernet Sauvignon)",
-    "bottleSuggestion": "When NO wine menu is provided: a very short descriptive style (2-4 words) like 'Dry White', 'Soft Fruity Red', 'Crisp Light White', 'Bold Full-Bodied Red', 'Off-Dry Aromatic White', 'Sweet Dessert Wine'. Do NOT put grape names here — those go in wineType/altWineType. When a wine menu IS provided: the exact bottle name and producer from the wine list.",
-    "producer": "The winery/producer name. Only include if a specific bottle from a wine menu is recommended. Otherwise null.",
-    "rationale": "1-2 concise sentences explaining why this wine pairs with this dish. Focus on the MAIN component of the dish (the protein, the primary ingredient, the sauce/dressing) — ignore garnishes and incidental sides. Avoid starting with 'The [dish] needs/demands/requires/calls for' — instead lead with the pairing itself or what makes it work (e.g. 'Pairs well because the wine's bright acidity...', 'The tannin structure complements...'). Be slightly technical — mention specific wine characteristics the diner might not know about (e.g. residual sugar tempering capsaicin heat, tannins binding with protein, malolactic fermentation adding creaminess, high acid wines refreshing the palate against fat). Write for a curious wine enthusiast who wants to learn something. Vary your language across pairings.",
-    "producer": null,
-    "vivinoRating": null,
-    "robertParkerScore": null,
-    "retailPrice": null,
-    "restaurantPriceGlass": null,
-    "restaurantPriceBottle": null,
+    "dish": "Dish title only — exactly as on menu, 1-5 words, original language. NEVER ingredients or prices.",
+    "description": "1-2 sentences in English: what it is, key ingredients, preparation. No prices.",
+    "course": "starter | main | dessert",
+    "wineType": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
+    "altWineType": "Mainstream alternative or null",
+    "bottleSuggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: exact bottle name from list.",
+    "producer": "Winery name if recommending a specific bottle, else null",
+    "rationale": "1-2 concise sentences on why this wine pairs with the dish's main component. Lead with the pairing logic, not 'the dish needs/demands'. Be slightly technical (e.g. residual sugar tempering heat, tannins binding protein, high acid cutting fat). Vary language across pairings.",
+    "vivinoRating": "number 1.0-5.0 if specific bottle recommended, -1 if unknown, else null",
+    "retailPrice": "Typical retail price with currency symbol if specific bottle, 'Not found' if unknown, else null",
+    "restaurantPriceGlass": "Per-glass price from wine menu with symbol, or null",
+    "restaurantPriceBottle": "Per-bottle price from wine menu with symbol, or null",
     "outsidePriceRange": false
   }
   ]
 }
 
-Additional rules:
-- The "dish" field must be the DISH TITLE/NAME only (1-5 words). NEVER put ingredients in the "dish" field. The dish title should be in the original language as it appears on the menu.
-- The "description" field is separate — describe the dish in English: what it is, key ingredients, and how it is prepared (1-2 sentences).
-- ALWAYS translate dish descriptions to English.
-- NEVER include the dish price in the description field.
-- The "course" field MUST be set correctly: "starter", "main", or "dessert".
+Rules:
 - Evaluate each dish INDEPENDENTLY using this structured approach:
   1. IDENTIFY THE PRIMARY PROTEIN OR MAIN INGREDIENT FIRST. This is the most important factor. Fish and seafood almost always pair better with white wines. Red meat pairs with red wines. Poultry and pork are flexible.
   2. THEN consider the preparation method (grilled, poached, fried, braised, etc.) and how it affects weight and flavour intensity.
@@ -118,15 +110,10 @@ Additional rules:
   - Fruit desserts → Moscato d'Asti, late-harvest Riesling, Sauternes
   - Cream/custard desserts → Sauternes, Tokaji, Muscat de Beaumes-de-Venise
 
-- It is perfectly fine to recommend the same wine for multiple dishes if it is genuinely the best pairing for each.
-- Do NOT try to vary your recommendations just for the sake of variety — accuracy matters more than diversity.
-- Think carefully about each pairing. Quality over variety.
-- altWineType: A mainstream, widely available alternative. If the primary is already mainstream, set to a different mainstream option, or null.
-- vivinoRating: Vivino rating (1.0-5.0). When a specific bottle is recommended, you MUST provide your best estimate. Only use null when no wine menu is provided and the recommendation is a general style. If you genuinely cannot estimate the rating for a specific bottle, use -1 as a sentinel value.
-- robertParkerScore: Robert Parker score (out of 100). Only if confident. Otherwise null.
-- retailPrice: Typical retail price for this bottle with currency symbol. When a specific bottle is recommended, you MUST provide your best estimate. Only use null when no wine menu is provided. If you genuinely cannot estimate the price for a specific bottle, use "Not found".
-- restaurantPriceGlass: Per-glass price from wine menu with currency symbol. Null if not listed or no wine menu.
-- restaurantPriceBottle: Per-bottle price from wine menu with currency symbol. Null if not listed or no wine menu.`;
+- Same wine may be recommended for multiple dishes if genuinely the best pairing — accuracy over variety.
+- altWineType: different mainstream option; null if no good alternative.
+- vivinoRating: MUST provide best estimate for any specific bottle; -1 if truly unknown; null only when no wine menu.
+- retailPrice: MUST provide best estimate for any specific bottle; "Not found" if truly unknown; null only when no wine menu.`;
 }
 
 const WINE_MENU_ADDENDUM = `
@@ -311,7 +298,7 @@ export async function getWinePairings(
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 16384,
+    max_tokens: 6500,
     messages: [
       {
         role: "user",
@@ -319,6 +306,10 @@ export async function getWinePairings(
       },
     ],
   });
+
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("MAX_DISHES_EXCEEDED");
+  }
 
   const text =
     message.content[0].type === "text" ? message.content[0].text : "";
@@ -354,7 +345,7 @@ export async function getWinePairingsFromUrl(
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
-    max_tokens: 16384,
+    max_tokens: 6500,
     messages: [
       {
         role: "user",
@@ -362,6 +353,10 @@ export async function getWinePairingsFromUrl(
       },
     ],
   });
+
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("MAX_DISHES_EXCEEDED");
+  }
 
   const text =
     message.content[0].type === "text" ? message.content[0].text : "";

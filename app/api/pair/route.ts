@@ -124,8 +124,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ pairings: result.pairings, restaurantName: result.restaurantName, menuCurrency: result.menuCurrency });
   } catch (error: unknown) {
     console.error("Error processing menu:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to process menu";
+    const raw = error instanceof Error ? error.message : "Failed to process menu";
+    const message = raw === "MAX_DISHES_EXCEEDED"
+      ? "Maximum dish limit reached (50 dishes). Please upload a smaller menu or split it across multiple requests."
+      : raw;
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
