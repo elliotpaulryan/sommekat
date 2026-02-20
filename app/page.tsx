@@ -519,8 +519,8 @@ export default function Home() {
 
               {recipeResult.pairings.map((pairing, i) => (
                 <div key={i} className="rounded-2xl border-2 border-[#722F37] bg-white/90 shadow-md p-5">
-                  {pairing.blend && (
-                    <p className="text-base font-bold text-stone-900 mb-2">{pairing.blend}</p>
+                  {pairing.wineType && (
+                    <p className="text-base font-bold text-stone-900 mb-2">{pairing.wineType}</p>
                   )}
                   {pairing.altWineType && (
                     <div className="mb-3">
