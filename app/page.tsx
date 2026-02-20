@@ -519,9 +519,14 @@ export default function Home() {
 
               {recipeResult.pairings.map((pairing, i) => (
                 <div key={i} className="rounded-2xl border-2 border-[#722F37] bg-white/90 shadow-md p-5">
-                  {pairing.wineType && (
-                    <p className="text-base font-bold text-stone-900 mb-2">{pairing.wineType}</p>
-                  )}
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#722F37] text-white text-xs font-extrabold flex items-center justify-center">
+                      {i + 1}
+                    </span>
+                    {pairing.wineType && (
+                      <p className="text-base font-bold text-stone-900">{pairing.wineType}</p>
+                    )}
+                  </div>
                   {pairing.altWineType && (
                     <div className="mb-3">
                       <span className={`inline-block rounded-full border px-3 py-0.5 text-xs font-semibold ${getWineColor(pairing.altWineType)}`}>
