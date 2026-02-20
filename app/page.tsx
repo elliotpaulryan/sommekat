@@ -533,14 +533,20 @@ export default function Home() {
                       {pairing.suggestion}
                     </span>
                   </div>
-                  {(pairing.winery || pairing.blend) && (
+                  {pairing.blend && (
                     <div className="mb-3">
-                      <p className="text-base font-bold text-stone-900">
-                        {pairing.winery}{pairing.blend ? ` — ${pairing.blend}` : ""}
-                      </p>
+                      <p className="text-base font-bold text-stone-900">{pairing.blend}</p>
                     </div>
                   )}
                   <p className="text-sm text-stone-700 leading-relaxed">{pairing.rationale}</p>
+                  {(pairing.winery || pairing.blend) && (
+                    <p className="mt-2 text-xs text-stone-500 italic">
+                      If available, you should try the{" "}
+                      <span className="font-semibold not-italic text-stone-600">
+                        {[pairing.winery, pairing.blend].filter(Boolean).join(" ")}
+                      </span>
+                    </p>
+                  )}
                   <a
                     href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([pairing.winery, pairing.blend].filter(Boolean).join(" ") || pairing.wineType)}`}
                     target="_blank"
