@@ -94,13 +94,13 @@ export default function RecipesPage() {
             "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all no-underline",
             "text-burgundy-200 hover:text-white hover:bg-white/10",
           ].join(" ")}>
-            🍽 Restaurant Menu
+            Restaurant
           </a>
           <span className={[
             "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all",
             "bg-white text-wine shadow-sm",
           ].join(" ")}>
-            🍳 Recipes
+            Recipes
           </span>
         </div>
       </div>

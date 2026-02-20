@@ -175,13 +175,13 @@ export default function Home() {
             "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all",
             "bg-white text-wine shadow-sm",
           ].join(" ")}>
-            🍽 Restaurant Menu
+            Restaurant
           </span>
           <a href="/recipes" className={[
             "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all no-underline",
             "text-burgundy-200 hover:text-white hover:bg-white/10",
           ].join(" ")}>
-            🍳 Recipes
+            Recipes
           </a>
         </div>
       </div>
