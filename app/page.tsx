@@ -283,8 +283,7 @@ export default function Home() {
           {(state === "idle" || state === "error") && (
             <div className="text-center mb-6">
               <p className="text-lg text-red-900 font-bold max-w-lg mx-auto leading-relaxed">
-                Upload a photo or PDF of any restaurant menu and SommeKat
-                will recommend the ideal wine pairing for each item.
+                Upload any restaurant menu and SommeKat will provide AI-powered wine pairings.
               </p>
             </div>
           )}
