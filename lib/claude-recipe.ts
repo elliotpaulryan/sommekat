@@ -78,9 +78,11 @@ Return a JSON object (no markdown, no code fences, raw JSON only) with this stru
 
 Rules:
 - Focus pairing logic on the PRIMARY protein or main ingredient first, then the cooking method and dominant flavours
+- IMPORTANT: Base wine selection purely on flavour compatibility — DO NOT choose wines based on the geographic origin of the dish. An Italian recipe does not mean Italian wine; a French recipe does not mean French wine. Ignore where the dish comes from entirely.
+- The user is${userCountry ? ` in ${userCountry}` : " an international user"}. Recommend grape varieties and wine styles that are widely available there, and choose a winery whose bottles can realistically be found in a mainstream supermarket or wine retailer${userCountry ? ` in ${userCountry}` : ""}.
 - Provide 2 pairings minimum, 3 if the dish is complex or versatile
 - Keep suggestions accessible — avoid extremely obscure varieties
-- For winery and blend: choose real, well-known producers whose wines are readily available in ${userCountry ? userCountry : "the user's market"} — think bottles you'd find in a mainstream supermarket or wine retailer there. Do NOT include vintage year in either field.
+- For winery and blend: choose real, well-known producers stocked${userCountry ? ` in ${userCountry}` : " in the user's market"}. Do NOT include vintage year in either field.
 - If the page doesn't appear to contain a recipe, set recipeName to null`;
 
   const message = await client.messages.create({
