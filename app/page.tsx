@@ -5,8 +5,10 @@ import MenuUpload from "@/components/MenuUpload";
 import MenuResults from "@/components/MenuResults";
 import LoadingState from "@/components/LoadingState";
 import type { WinePairing } from "@/lib/claude";
+import type { RecipeResult } from "@/lib/claude-recipe";
 
 type AppState = "idle" | "uploading" | "results" | "error";
+type RecipeState = "idle" | "loading" | "results" | "error";
 
 const LOCALE_CURRENCY: Record<string, string> = {
   "en-US": "USD", "en-AU": "AUD", "en-GB": "GBP", "en-CA": "CAD", "en-NZ": "NZD",
@@ -34,7 +36,45 @@ function getCurrencyInfo(): { code: string; symbol: string } {
   }
 }
 
+function getWineColor(wineType: string): string {
+  const lower = wineType.toLowerCase();
+  if (lower.includes("rosé") || lower.includes("rose") || lower.includes("blush")) {
+    return "bg-pink-100 border-pink-300 text-pink-900";
+  }
+  if (lower.includes("sparkling") || lower.includes("champagne") || lower.includes("prosecco") || lower.includes("cava") || lower.includes("crémant") || lower.includes("cremant") || lower.includes("franciacorta") || lower.includes("sekt")) {
+    return "bg-amber-50 border-2 border-dashed border-amber-300 text-amber-800 shadow-[0_0_0_2px_rgba(251,191,36,0.15),0_0_0_4px_rgba(251,191,36,0.1)]";
+  }
+  if (
+    lower.includes("red") || lower.includes("cabernet") || lower.includes("merlot") ||
+    lower.includes("pinot noir") || lower.includes("syrah") || lower.includes("shiraz") ||
+    lower.includes("malbec") || lower.includes("tempranillo") || lower.includes("sangiovese") ||
+    lower.includes("nebbiolo") || lower.includes("zinfandel") || lower.includes("grenache") ||
+    lower.includes("mourvèdre") || lower.includes("mourvedre") || lower.includes("carmenere") ||
+    lower.includes("pinotage") || lower.includes("aglianico") || lower.includes("barbera") ||
+    lower.includes("xinomavro") || lower.includes("agiorgitiko") || lower.includes("chianti") ||
+    lower.includes("barolo") || lower.includes("barbaresco") || lower.includes("montepulciano") ||
+    lower.includes("primitivo") || lower.includes("nero d'avola") || lower.includes("dolcetto") ||
+    lower.includes("valpolicella") || lower.includes("amarone") || lower.includes("rioja") ||
+    lower.includes("garnacha") || lower.includes("monastrell") || lower.includes("touriga") ||
+    lower.includes("tannat") || lower.includes("corvina") || lower.includes("bonarda") ||
+    lower.includes("carignan") || lower.includes("cinsault") || lower.includes("gamay") ||
+    lower.includes("beaujolais") || lower.includes("bordeaux") || lower.includes("burgundy") ||
+    lower.includes("côtes du rhône") || lower.includes("cotes du rhone") ||
+    lower.includes("châteauneuf") || lower.includes("chateauneuf") ||
+    lower.includes("saint-émilion") || lower.includes("saint-julien") ||
+    lower.includes("pauillac") || lower.includes("margaux") || lower.includes("pomerol") ||
+    lower.includes("brunello") || lower.includes("lambrusco") || lower.includes("zweigelt") ||
+    lower.includes("blaufränkisch")
+  ) {
+    return "bg-red-900/30 border-red-900/50 text-red-950";
+  }
+  return "bg-amber-100 border-amber-400 text-amber-900";
+}
+
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<"restaurant" | "recipes">("restaurant");
+
+  // — Restaurant state —
   const [state, setState] = useState<AppState>("idle");
   const [pairings, setPairings] = useState<WinePairing[]>([]);
   const [restaurantName, setRestaurantName] = useState<string | null>(null);
@@ -118,29 +158,60 @@ export default function Home() {
     setPairings([]);
     setRestaurantName(null);
     setError("");
-    // Keep food menu, wine menu, price slider and course selections so the
-    // user can refine (e.g. add a wine menu) and re-run without re-uploading.
+  };
+
+  // — Recipe state —
+  const [recipeState, setRecipeState] = useState<RecipeState>("idle");
+  const [recipeUrl, setRecipeUrl] = useState("");
+  const [recipeResult, setRecipeResult] = useState<RecipeResult | null>(null);
+  const [recipeError, setRecipeError] = useState("");
+
+  const handleRecipeSubmit = async () => {
+    if (!recipeUrl.trim()) return;
+    setRecipeState("loading");
+    setRecipeError("");
+
+    try {
+      const response = await fetch("/api/pair-recipe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: recipeUrl.trim() }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to analyse recipe");
+      setRecipeResult(data);
+      setRecipeState("results");
+    } catch (err) {
+      setRecipeError(err instanceof Error ? err.message : "Something went wrong");
+      setRecipeState("error");
+    }
+  };
+
+  const handleRecipeReset = () => {
+    setRecipeState("idle");
+    setRecipeResult(null);
+    setRecipeError("");
   };
 
   return (
     <main className="min-h-screen">
-      {/* Header with logo */}
+      {/* Header */}
       <header className="relative pt-8 sm:pt-6">
         {/* Mobile: stacked centered layout */}
         <div className="flex flex-col items-center gap-3 px-6 py-6 sm:hidden">
-          <a href="/">
+          <button onClick={() => setActiveTab("restaurant")} className="cursor-pointer">
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-36 h-36 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
+              className="w-36 h-36 object-contain drop-shadow-2xl rounded-full border-4 border-red-900"
             />
-          </a>
+          </button>
           <div className="text-center">
-            <a href="/" className="no-underline">
-              <h1 className="text-[2.75rem] font-bold text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+            <button onClick={() => setActiveTab("restaurant")} className="cursor-pointer bg-transparent border-0 p-0">
+              <h1 className="text-[2.75rem] font-bold text-red-900" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
-            </a>
+            </button>
             <p className="mt-1 text-sm text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
             </p>
@@ -148,19 +219,19 @@ export default function Home() {
         </div>
         {/* Desktop: side-by-side layout */}
         <div className="hidden sm:flex mx-auto max-w-5xl px-6 py-4 items-end gap-5">
-          <a href="/">
+          <button onClick={() => setActiveTab("restaurant")} className="cursor-pointer">
             <img
               src="/logo.png"
               alt="SommeKat logo"
-              className="w-40 h-40 object-contain drop-shadow-2xl rounded-full cursor-pointer border-4 border-red-900"
+              className="w-40 h-40 object-contain drop-shadow-2xl rounded-full border-4 border-red-900"
             />
-          </a>
+          </button>
           <div className="pb-2">
-            <a href="/" className="no-underline">
-              <h1 className="text-[5rem] font-bold text-red-900 cursor-pointer" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
+            <button onClick={() => setActiveTab("restaurant")} className="cursor-pointer bg-transparent border-0 p-0">
+              <h1 className="text-[5rem] font-bold text-red-900" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
                 SommeKat
               </h1>
-            </a>
+            </button>
             <p className="mt-1 text-base text-red-900/80 tracking-widest uppercase font-bold">
               AI-powered wine pairing
             </p>
@@ -171,179 +242,311 @@ export default function Home() {
       {/* Tab bar */}
       <div className="mx-auto max-w-5xl px-6 pt-4">
         <div className="flex gap-1 rounded-xl bg-wine-dark/60 p-1 max-w-xs mx-auto">
-          <span className={[
-            "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all",
-            "bg-white text-wine shadow-sm",
-          ].join(" ")}>
+          <button
+            onClick={() => setActiveTab("restaurant")}
+            className={[
+              "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all cursor-pointer",
+              activeTab === "restaurant"
+                ? "bg-white text-wine shadow-sm"
+                : "text-burgundy-200 hover:text-white hover:bg-white/10",
+            ].join(" ")}
+          >
             Restaurant
-          </span>
-          <a href="/recipes" className={[
-            "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all no-underline",
-            "text-burgundy-200 hover:text-white hover:bg-white/10",
-          ].join(" ")}>
+          </button>
+          <button
+            onClick={() => setActiveTab("recipes")}
+            className={[
+              "flex-1 text-center rounded-lg px-4 py-2 text-sm font-bold transition-all cursor-pointer",
+              activeTab === "recipes"
+                ? "bg-white text-wine shadow-sm"
+                : "text-burgundy-200 hover:text-white hover:bg-white/10",
+            ].join(" ")}
+          >
             Recipes
-          </a>
+          </button>
         </div>
       </div>
 
-      <div className="mx-auto max-w-5xl px-6 pt-8 sm:pt-6 pb-6">
-        {/* Tagline — only show on idle/error */}
-        {(state === "idle" || state === "error") && (
-          <div className="text-center mb-6">
-            <p className="text-lg text-red-900 font-bold max-w-lg mx-auto leading-relaxed">
-              Upload a photo or PDF of any restaurant menu and SommeKat
-              will recommend the ideal wine pairing for each item.
-            </p>
-          </div>
-        )}
-
-        {/* Upload */}
-        {(state === "idle" || state === "error") && (
-          <form onSubmit={(e) => { e.preventDefault(); if (hasFoodMenu) handleSubmit(); }}>
-            <div className="mx-auto max-w-3xl grid gap-6 sm:grid-cols-2">
-              <MenuUpload
-                label="Food Menu"
-                sublabel="Drop your food menu here"
-                initialFiles={foodFiles}
-                initialUrl={foodUrl}
-                onFilesChange={setFoodFiles}
-                onUrlChange={setFoodUrl}
-                isUploading={false}
-              />
-              <MenuUpload
-                label="Wine Menu (Optional)"
-                sublabel="Drop your wine menu here"
-                initialFiles={wineFiles}
-                initialUrl={wineUrl}
-                onFilesChange={setWineFiles}
-                onUrlChange={setWineUrl}
-                isUploading={false}
-              />
+      {/* ── Restaurant tab ── */}
+      <div className={activeTab === "restaurant" ? "" : "hidden"}>
+        <div className="mx-auto max-w-5xl px-6 pt-8 sm:pt-6 pb-6">
+          {(state === "idle" || state === "error") && (
+            <div className="text-center mb-6">
+              <p className="text-lg text-red-900 font-bold max-w-lg mx-auto leading-relaxed">
+                Upload a photo or PDF of any restaurant menu and SommeKat
+                will recommend the ideal wine pairing for each item.
+              </p>
             </div>
+          )}
 
-            {/* Course selection */}
-            <div className="mx-auto max-w-3xl mt-6 text-center">
-              <p className="text-sm text-red-900 font-bold mb-2">Mains are always paired</p>
-              <div className="flex items-center justify-center gap-3">
-                <span className="text-sm font-bold text-red-900">Optional Inclusions:</span>
-                {[
-                  { id: "starters", label: "Starters" },
-                  { id: "desserts", label: "Desserts" },
-                ].map(({ id, label }) => {
-                  const isSelected = courses.includes(id);
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={() => {
-                        setCourses((prev) =>
-                          prev.includes(id)
-                            ? prev.filter((c) => c !== id)
-                            : [...prev, id]
-                        );
-                      }}
-                      className={[
-                        "rounded-full px-4 py-1.5 text-sm font-bold transition-all border-2 cursor-pointer",
-                        isSelected
-                          ? "bg-wine text-white border-wine shadow-md"
-                          : "bg-white/80 text-wine border-wine/30 hover:border-wine/60",
-                      ].join(" ")}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+          {(state === "idle" || state === "error") && (
+            <form onSubmit={(e) => { e.preventDefault(); if (hasFoodMenu) handleSubmit(); }}>
+              <div className="mx-auto max-w-3xl grid gap-6 sm:grid-cols-2">
+                <MenuUpload
+                  label="Food Menu"
+                  sublabel="Drop your food menu here"
+                  initialFiles={foodFiles}
+                  initialUrl={foodUrl}
+                  onFilesChange={setFoodFiles}
+                  onUrlChange={setFoodUrl}
+                  isUploading={false}
+                />
+                <MenuUpload
+                  label="Wine Menu (Optional)"
+                  sublabel="Drop your wine menu here"
+                  initialFiles={wineFiles}
+                  initialUrl={wineUrl}
+                  onFilesChange={setWineFiles}
+                  onUrlChange={setWineUrl}
+                  isUploading={false}
+                />
               </div>
-            </div>
 
-            {/* Price range slider — only when wine menu is provided */}
-            {hasWineMenu && (
-              <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
-                <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range (Bottle)</p>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-semibold text-white min-w-[45px]">{currencySymbol}{minPrice}</span>
-                  <div className="flex-1 relative h-8">
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-white/20"
-                      style={{ left: 0, right: 0 }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-wine-light"
-                      style={{
-                        left: `${(minPrice / SLIDER_MAX) * 100}%`,
-                        right: `${100 - (maxPrice / SLIDER_MAX) * 100}%`,
-                      }}
-                    />
-                    <input
-                      type="range"
-                      min={0}
-                      max={SLIDER_MAX}
-                      step={1}
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 1))}
-                      className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-                    />
-                    <input
-                      type="range"
-                      min={0}
-                      max={SLIDER_MAX}
-                      step={1}
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 1))}
-                      className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-white min-w-[45px] text-right">
-                    {maxIsUnlimited ? "Max" : `${currencySymbol}${maxPrice}`}
-                  </span>
+              {/* Course selection */}
+              <div className="mx-auto max-w-3xl mt-6 text-center">
+                <p className="text-sm text-red-900 font-bold mb-2">Mains are always paired</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-sm font-bold text-red-900">Optional Inclusions:</span>
+                  {[
+                    { id: "starters", label: "Starters" },
+                    { id: "desserts", label: "Desserts" },
+                  ].map(({ id, label }) => {
+                    const isSelected = courses.includes(id);
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => {
+                          setCourses((prev) =>
+                            prev.includes(id)
+                              ? prev.filter((c) => c !== id)
+                              : [...prev, id]
+                          );
+                        }}
+                        className={[
+                          "rounded-full px-4 py-1.5 text-sm font-bold transition-all border-2 cursor-pointer",
+                          isSelected
+                            ? "bg-wine text-white border-wine shadow-md"
+                            : "bg-white/80 text-wine border-wine/30 hover:border-wine/60",
+                        ].join(" ")}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            )}
 
-            {/* Submit button */}
-            <div className="mt-8 text-center">
-              <button
-                type="submit"
-                disabled={!hasFoodMenu}
-                className={[
-                  "inline-flex items-center gap-2 rounded-xl px-10 py-4 text-lg font-bold text-white border-t-2 border-l-2 border-r-2 border-b-4 transition-all",
-                  hasFoodMenu
-                    ? "border-t-white/30 border-l-white/20 border-r-black/20 border-b-black/30 bg-gradient-to-b from-wine-light to-wine shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer hover:from-wine hover:to-wine-light hover:shadow-[0_6px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-[0.98] active:border-b-2 active:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(0,0,0,0.2)]"
-                    : "border-t-white/10 border-l-white/10 border-r-black/10 border-b-black/10 bg-gradient-to-b from-wine-light/40 to-wine/40 shadow-none opacity-50 cursor-not-allowed grayscale-[30%] pointer-events-none",
-                ].join(" ")}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+              {/* Price range slider */}
+              {hasWineMenu && (
+                <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
+                  <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range (Bottle)</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-white min-w-[45px]">{currencySymbol}{minPrice}</span>
+                    <div className="flex-1 relative h-8">
+                      <div
+                        className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-white/20"
+                        style={{ left: 0, right: 0 }}
+                      />
+                      <div
+                        className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-wine-light"
+                        style={{
+                          left: `${(minPrice / SLIDER_MAX) * 100}%`,
+                          right: `${100 - (maxPrice / SLIDER_MAX) * 100}%`,
+                        }}
+                      />
+                      <input
+                        type="range"
+                        min={0}
+                        max={SLIDER_MAX}
+                        step={1}
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(Math.min(Number(e.target.value), maxPrice - 1))}
+                        className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                      />
+                      <input
+                        type="range"
+                        min={0}
+                        max={SLIDER_MAX}
+                        step={1}
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(Math.max(Number(e.target.value), minPrice + 1))}
+                        className="absolute inset-0 w-full appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-wine [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:cursor-pointer [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:appearance-none [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-wine [&::-moz-range-thumb]:shadow-md [&::-moz-range-thumb]:cursor-pointer"
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-white min-w-[45px] text-right">
+                      {maxIsUnlimited ? "Max" : `${currencySymbol}${maxPrice}`}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit button */}
+              <div className="mt-8 text-center">
+                <button
+                  type="submit"
+                  disabled={!hasFoodMenu}
+                  className={[
+                    "inline-flex items-center gap-2 rounded-xl px-10 py-4 text-lg font-bold text-white border-t-2 border-l-2 border-r-2 border-b-4 transition-all",
+                    hasFoodMenu
+                      ? "border-t-white/30 border-l-white/20 border-r-black/20 border-b-black/30 bg-gradient-to-b from-wine-light to-wine shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer hover:from-wine hover:to-wine-light hover:shadow-[0_6px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-[0.98] active:border-b-2 active:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(0,0,0,0.2)]"
+                      : "border-t-white/10 border-l-white/10 border-r-black/10 border-b-black/10 bg-gradient-to-b from-wine-light/40 to-wine/40 shadow-none opacity-50 cursor-not-allowed grayscale-[30%] pointer-events-none",
+                  ].join(" ")}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-                Get Wine Pairings
-              </button>
-            </div>
-
-            {state === "error" && (
-              <div className="mt-6 mx-auto max-w-xl rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
-                {error}
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  Get Wine Pairings
+                </button>
               </div>
-            )}
-          </form>
-        )}
 
-        {/* Uploading */}
-        {state === "uploading" && <LoadingState />}
+              {state === "error" && (
+                <div className="mt-6 mx-auto max-w-xl rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+            </form>
+          )}
 
-        {/* Results */}
-        {state === "results" && (
-          <MenuResults pairings={pairings} restaurantName={restaurantName} onReset={handleReset} />
-        )}
+          {state === "uploading" && <LoadingState />}
+
+          {state === "results" && (
+            <MenuResults pairings={pairings} restaurantName={restaurantName} onReset={handleReset} />
+          )}
+        </div>
+      </div>
+
+      {/* ── Recipes tab ── */}
+      <div className={activeTab === "recipes" ? "" : "hidden"}>
+        <div className="mx-auto max-w-3xl px-6 pt-8 pb-10">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-extrabold text-red-900 mb-2">Recipe Wine Pairing</h2>
+            <p className="text-red-900/80 font-bold text-base max-w-lg mx-auto">
+              Cooking at home? Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your dish.
+            </p>
+          </div>
+
+          {(recipeState === "idle" || recipeState === "error") && (
+            <div className="rounded-3xl bg-wine-dark p-6">
+              <p className="text-xl font-medium text-burgundy-200 mb-3 text-center">Recipe URL</p>
+              <input
+                type="url"
+                value={recipeUrl}
+                onChange={(e) => setRecipeUrl(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleRecipeSubmit(); }}
+                placeholder="https://www.example.com/my-favourite-recipe"
+                className={[
+                  "w-full rounded-xl border px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-wine/50 focus:border-wine transition-all",
+                  recipeUrl.trim()
+                    ? "border-green-500 bg-green-50/80 shadow-[0_0_0_2px_rgba(34,197,94,0.15)]"
+                    : "border-burgundy-300/40 bg-cream",
+                ].join(" ")}
+              />
+
+              {recipeError && (
+                <p className="mt-3 text-sm text-red-200 font-medium text-center">{recipeError}</p>
+              )}
+
+              <div className="mt-5 text-center">
+                <button
+                  type="button"
+                  onClick={handleRecipeSubmit}
+                  disabled={!recipeUrl.trim()}
+                  className={[
+                    "px-8 py-3 rounded-xl text-base font-extrabold tracking-wide transition-all duration-150 select-none",
+                    recipeUrl.trim()
+                      ? "text-white cursor-pointer active:translate-y-[2px] active:shadow-none"
+                      : "text-white/50 cursor-not-allowed",
+                  ].join(" ")}
+                  style={recipeUrl.trim() ? {
+                    background: "linear-gradient(180deg, #9b4d57 0%, #722F37 100%)",
+                    border: "1px solid #5a1f26",
+                    boxShadow: "0 2px 0 #4a1520, 0 4px 8px rgba(0,0,0,0.25)",
+                  } : {
+                    background: "linear-gradient(180deg, #6b3039 0%, #4a1e24 100%)",
+                    border: "1px solid #3a1218",
+                    boxShadow: "none",
+                  }}
+                >
+                  Get Wine Pairings
+                </button>
+              </div>
+            </div>
+          )}
+
+          {recipeState === "loading" && (
+            <div className="text-center py-16">
+              <div className="inline-flex items-center gap-3 rounded-2xl bg-wine-dark/80 px-8 py-5 shadow-xl">
+                <svg className="animate-spin h-6 w-6 text-burgundy-200" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-burgundy-200 font-bold text-lg">Analysing your recipe…</span>
+              </div>
+            </div>
+          )}
+
+          {recipeState === "results" && recipeResult && (
+            <div className="space-y-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-extrabold text-red-900">
+                    Wine Pairings for <span className="font-black">{recipeResult.recipeName}</span>
+                  </h2>
+                  {recipeResult.description && (
+                    <p className="mt-1 text-red-900/80 font-bold text-sm">{recipeResult.description}</p>
+                  )}
+                </div>
+                <button
+                  onClick={handleRecipeReset}
+                  className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition-all hover:bg-stone-50 hover:border-stone-400 cursor-pointer flex-shrink-0"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Try another recipe
+                </button>
+              </div>
+
+              {recipeResult.pairings.map((pairing, i) => (
+                <div key={i} className="rounded-2xl border-2 border-[#722F37] bg-white/90 shadow-md p-5">
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className={`inline-block rounded-full border px-3 py-0.5 text-xs font-semibold ${getWineColor(pairing.wineType)}`}>
+                      {pairing.wineType}
+                    </span>
+                    {pairing.altWineType && (
+                      <span className={`inline-block rounded-full border px-3 py-0.5 text-xs font-semibold ${getWineColor(pairing.altWineType)}`}>
+                        Alt: {pairing.altWineType}
+                      </span>
+                    )}
+                    <span className="inline-block rounded-full border border-stone-200 bg-stone-50 px-3 py-0.5 text-xs font-semibold text-stone-600">
+                      {pairing.suggestion}
+                    </span>
+                  </div>
+                  {(pairing.winery || pairing.blend) && (
+                    <div className="mb-3">
+                      <p className="text-base font-bold text-stone-900">
+                        {pairing.winery}{pairing.blend ? ` — ${pairing.blend}` : ""}
+                      </p>
+                    </div>
+                  )}
+                  <p className="text-sm text-stone-700 leading-relaxed">{pairing.rationale}</p>
+                  <a
+                    href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([pairing.winery, pairing.blend].filter(Boolean).join(" ") || pairing.wineType)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-purple-700 hover:text-purple-900 transition-colors no-underline"
+                  >
+                    <span>Search on Vivino</span>
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
