@@ -175,7 +175,7 @@ export default function MenuUpload({
           <input
             ref={inputRef}
             type="file"
-            accept="image/*,.pdf"
+            accept="image/*,image/heic,image/heif,.heic,.heif,application/pdf,.pdf"
             multiple
             onChange={handleChange}
             className="hidden"
