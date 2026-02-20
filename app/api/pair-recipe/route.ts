@@ -3,7 +3,7 @@ import { getRecipePairings } from "@/lib/claude-recipe";
 
 export async function POST(request: NextRequest) {
   try {
-    const { url } = await request.json();
+    const { url, userCountry } = await request.json();
 
     if (!url || typeof url !== "string") {
       return NextResponse.json({ error: "No URL provided" }, { status: 400 });
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
     }
 
-    const result = await getRecipePairings(url);
+    const result = await getRecipePairings(url, typeof userCountry === "string" ? userCountry : undefined);
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.error("Error processing recipe:", error);

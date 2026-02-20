@@ -36,6 +36,16 @@ function getCurrencyInfo(): { code: string; symbol: string } {
   }
 }
 
+function getUserCountry(): string {
+  try {
+    const region = navigator.language.split("-")[1];
+    if (!region) return "";
+    return new Intl.DisplayNames(["en"], { type: "region" }).of(region) || "";
+  } catch {
+    return "";
+  }
+}
+
 function getWineColor(wineType: string): string {
   const lower = wineType.toLowerCase();
   if (lower.includes("rosé") || lower.includes("rose") || lower.includes("blush")) {
@@ -175,7 +185,7 @@ export default function Home() {
       const response = await fetch("/api/pair-recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: recipeUrl.trim() }),
+        body: JSON.stringify({ url: recipeUrl.trim(), userCountry: getUserCountry() }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to analyse recipe");
