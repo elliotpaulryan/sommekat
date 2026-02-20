@@ -4,14 +4,38 @@ import { useState } from "react";
 import type { RecipeResult } from "@/lib/claude-recipe";
 
 function getWineColor(wineType: string): string {
-  const w = wineType.toLowerCase();
-  if (/sparkling|champagne|prosecco|cava|crémant|pétillant/.test(w))
-    return "bg-amber-50 text-amber-900 border-amber-300";
-  if (/rosé|rose|blush|grenache rosé/.test(w))
-    return "bg-pink-100 text-pink-900 border-pink-300";
-  if (/cabernet|merlot|shiraz|syrah|malbec|pinot noir|zinfandel|tempranillo|sangiovese|nebbiolo|barbera|montepulciano|chianti|barolo|barbaresco|brunello|bordeaux|beaujolais|rioja|grenache|mourvedre|primitivo|nero d'avola|aglianico|port|brachetto/.test(w))
-    return "bg-red-100 text-red-900 border-red-300";
-  return "bg-yellow-50 text-yellow-900 border-yellow-300";
+  const lower = wineType.toLowerCase();
+  if (lower.includes("rosé") || lower.includes("rose") || lower.includes("blush")) {
+    return "bg-pink-100 border-pink-300 text-pink-900";
+  }
+  if (lower.includes("sparkling") || lower.includes("champagne") || lower.includes("prosecco") || lower.includes("cava") || lower.includes("crémant") || lower.includes("cremant") || lower.includes("franciacorta") || lower.includes("sekt")) {
+    return "bg-amber-50 border-2 border-dashed border-amber-300 text-amber-800 shadow-[0_0_0_2px_rgba(251,191,36,0.15),0_0_0_4px_rgba(251,191,36,0.1)]";
+  }
+  if (
+    lower.includes("red") || lower.includes("cabernet") || lower.includes("merlot") ||
+    lower.includes("pinot noir") || lower.includes("syrah") || lower.includes("shiraz") ||
+    lower.includes("malbec") || lower.includes("tempranillo") || lower.includes("sangiovese") ||
+    lower.includes("nebbiolo") || lower.includes("zinfandel") || lower.includes("grenache") ||
+    lower.includes("mourvèdre") || lower.includes("mourvedre") || lower.includes("carmenere") ||
+    lower.includes("pinotage") || lower.includes("aglianico") || lower.includes("barbera") ||
+    lower.includes("xinomavro") || lower.includes("agiorgitiko") || lower.includes("chianti") ||
+    lower.includes("barolo") || lower.includes("barbaresco") || lower.includes("montepulciano") ||
+    lower.includes("primitivo") || lower.includes("nero d'avola") || lower.includes("dolcetto") ||
+    lower.includes("valpolicella") || lower.includes("amarone") || lower.includes("rioja") ||
+    lower.includes("garnacha") || lower.includes("monastrell") || lower.includes("touriga") ||
+    lower.includes("tannat") || lower.includes("corvina") || lower.includes("bonarda") ||
+    lower.includes("carignan") || lower.includes("cinsault") || lower.includes("gamay") ||
+    lower.includes("beaujolais") || lower.includes("bordeaux") || lower.includes("burgundy") ||
+    lower.includes("côtes du rhône") || lower.includes("cotes du rhone") ||
+    lower.includes("châteauneuf") || lower.includes("chateauneuf") ||
+    lower.includes("saint-émilion") || lower.includes("saint-julien") ||
+    lower.includes("pauillac") || lower.includes("margaux") || lower.includes("pomerol") ||
+    lower.includes("brunello") || lower.includes("lambrusco") || lower.includes("zweigelt") ||
+    lower.includes("blaufränkisch")
+  ) {
+    return "bg-red-900/30 border-red-900/50 text-red-950";
+  }
+  return "bg-amber-100 border-amber-400 text-amber-900";
 }
 
 type PageState = "idle" | "loading" | "results" | "error";
@@ -220,9 +244,16 @@ export default function RecipesPage() {
                     {pairing.suggestion}
                   </span>
                 </div>
+                {(pairing.winery || pairing.blend) && (
+                  <div className="mb-3">
+                    <p className="text-base font-bold text-stone-900">
+                      {pairing.winery}{pairing.blend ? ` — ${pairing.blend}` : ""}
+                    </p>
+                  </div>
+                )}
                 <p className="text-sm text-stone-700 leading-relaxed">{pairing.rationale}</p>
                 <a
-                  href={`https://www.vivino.com/search/wines?q=${encodeURIComponent(pairing.wineType)}`}
+                  href={`https://www.vivino.com/search/wines?q=${encodeURIComponent([pairing.winery, pairing.blend].filter(Boolean).join(" ") || pairing.wineType)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-purple-700 hover:text-purple-900 transition-colors no-underline"
