@@ -5,6 +5,8 @@ import { useCallback, useState, useRef } from "react";
 interface MenuUploadProps {
   label: string;
   sublabel: string;
+  initialFiles?: File[];
+  initialUrl?: string;
   onFilesChange: (files: File[]) => void;
   onUrlChange: (url: string) => void;
   isUploading: boolean;
@@ -63,14 +65,18 @@ function compressImage(file: File): Promise<File> {
 export default function MenuUpload({
   label,
   sublabel,
+  initialFiles = [],
+  initialUrl = "",
   onFilesChange,
   onUrlChange,
   isUploading,
 }: MenuUploadProps) {
   const [dragActive, setDragActive] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<(string | null)[]>([]);
-  const [menuUrl, setMenuUrl] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>(initialFiles);
+  const [previews, setPreviews] = useState<(string | null)[]>(
+    initialFiles.map((f) => (f.type.startsWith("image/") ? URL.createObjectURL(f) : null))
+  );
+  const [menuUrl, setMenuUrl] = useState(initialUrl);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback(

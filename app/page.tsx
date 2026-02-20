@@ -118,10 +118,8 @@ export default function Home() {
     setPairings([]);
     setRestaurantName(null);
     setError("");
-    setFoodFiles([]);
-    setFoodUrl("");
-    setWineFiles([]);
-    setWineUrl("");
+    // Keep food menu, wine menu, price slider and course selections so the
+    // user can refine (e.g. add a wine menu) and re-run without re-uploading.
   };
 
   return (
@@ -188,6 +186,8 @@ export default function Home() {
               <MenuUpload
                 label="Food Menu"
                 sublabel="Drop your food menu here"
+                initialFiles={foodFiles}
+                initialUrl={foodUrl}
                 onFilesChange={setFoodFiles}
                 onUrlChange={setFoodUrl}
                 isUploading={false}
@@ -195,6 +195,8 @@ export default function Home() {
               <MenuUpload
                 label="Wine Menu (Optional)"
                 sublabel="Drop your wine menu here"
+                initialFiles={wineFiles}
+                initialUrl={wineUrl}
                 onFilesChange={setWineFiles}
                 onUrlChange={setWineUrl}
                 isUploading={false}
