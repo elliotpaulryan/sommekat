@@ -293,7 +293,10 @@ export async function getWinePairings(
 
   const currency = wineMenu?.currency || "USD";
   const courses = wineMenu?.courses || ["mains"];
-  let prompt = buildBasePrompt(courses) + `\n- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${currency} and set "menuCurrency" to "${currency}".`;
+  const systemPrompt = buildBasePrompt(courses);
+
+  // Variable instructions appended to user message
+  let userInstructions = `- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${currency} and set "menuCurrency" to "${currency}".`;
 
   // Add wine menu if provided
   if (wineMenu?.wineMenuFiles && wineMenu.wineMenuFiles.length > 0) {
@@ -305,23 +308,24 @@ export async function getWinePairings(
     for (const f of wineMenu.wineMenuFiles) {
       contentBlocks.push(makeContentBlock(f.base64, f.mimeType));
     }
-    prompt += WINE_MENU_ADDENDUM;
-    prompt += buildPriceRangePrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
+    userInstructions += WINE_MENU_ADDENDUM;
+    userInstructions += buildPriceRangePrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
   } else if (wineMenu?.wineMenuUrl) {
     const wineBlock = await fetchUrlAsContentBlock(wineMenu.wineMenuUrl);
     contentBlocks.push(
       { type: "text", text: "The following is the restaurant's wine menu:" },
       wineBlock
     );
-    prompt += WINE_MENU_ADDENDUM;
-    prompt += buildPriceRangePrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
+    userInstructions += WINE_MENU_ADDENDUM;
+    userInstructions += buildPriceRangePrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
   }
 
-  contentBlocks.push({ type: "text", text: prompt });
+  contentBlocks.push({ type: "text", text: userInstructions });
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 6500,
+    system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
     messages: [
       {
         role: "user",
@@ -352,7 +356,8 @@ export async function getWinePairingsFromUrl(
 
   const contentBlocks: ContentBlockParam[] = [foodBlock];
   const fallbackCurrency = currency || "USD";
-  let prompt = buildBasePrompt(courses || ["mains"]) + `\n- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${fallbackCurrency} and set "menuCurrency" to "${fallbackCurrency}".`;
+  const systemPrompt = buildBasePrompt(courses || ["mains"]);
+  let userInstructions = `- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${fallbackCurrency} and set "menuCurrency" to "${fallbackCurrency}".`;
 
   if (wineUrl) {
     const wineBlock = await fetchUrlAsContentBlock(wineUrl);
@@ -360,15 +365,16 @@ export async function getWinePairingsFromUrl(
       { type: "text", text: "The following is the restaurant's wine menu:" },
       wineBlock
     );
-    prompt += WINE_MENU_ADDENDUM;
-    prompt += buildPriceRangePrompt(minPrice, maxPrice, currency || "USD");
+    userInstructions += WINE_MENU_ADDENDUM;
+    userInstructions += buildPriceRangePrompt(minPrice, maxPrice, currency || "USD");
   }
 
-  contentBlocks.push({ type: "text", text: prompt });
+  contentBlocks.push({ type: "text", text: userInstructions });
 
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 6500,
+    system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
     messages: [
       {
         role: "user",
