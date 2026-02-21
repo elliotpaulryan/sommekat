@@ -5,6 +5,7 @@ export interface WinePairing {
   dish: string;
   description: string;
   course: "starter" | "main" | "dessert";
+  menuSection: string | null;
   wineType: string;
   altWineType: string | null;
   bottleSuggestion: string;
@@ -76,6 +77,7 @@ Return your response as a JSON object (no markdown, no code fences, raw JSON onl
     "dish": "Dish title only — exactly as on menu, 1-5 words, original language. NEVER ingredients or prices.",
     "desc": "1-2 sentences in English: what it is, key ingredients, preparation. No prices.",
     "course": "starter | main | dessert",
+    "menuSection": "Only include when the restaurant website has multiple distinct menus/meal periods (e.g. 'Breakfast', 'Brunch', 'Lunch', 'Dinner', 'Tasting Menu', 'All Day', 'Bar Menu'). Use the exact menu name as it appears on the site. Omit if there is only one menu or if unclear.",
     "wine": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
     "altWine": "Mainstream alternative — omit if none",
     "suggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: wine name WITHOUT region (e.g. 'Cloudy Bay Sauvignon Blanc', not 'Cloudy Bay Marlborough Sauvignon Blanc').",
@@ -181,10 +183,11 @@ function htmlToText(html: string): string {
 
 function findMenuLinks(html: string, baseUrl: string): string[] {
   const linkPattern = /href=["']([^"']+)["']/gi;
-  const menuKeywords = /\b(menu|menus|food|dining|eat|carte|dishes|lunch|dinner|breakfast|starters|mains|desserts|a-la-carte)\b/i;
+  const menuKeywords = /\b(menu|menus|food|dining|eat|carte|dishes|lunch|dinner|breakfast|brunch|supper|snacks|small.plates|tasting|set.menu|prix.fixe|all.day|evening|afternoon|sunday|starters|mains|desserts|a-la-carte)\b/i;
   const skipExt = /\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|ttf|mp4|webp)(\?.*)?$/i;
   const seen = new Set<string>();
   const candidates: string[] = [];
+  const base = new URL(baseUrl);
 
   let match;
   while ((match = linkPattern.exec(html)) !== null) {
@@ -193,11 +196,9 @@ function findMenuLinks(html: string, baseUrl: string): string[] {
     if (!menuKeywords.test(href)) continue;
     try {
       const resolved = new URL(href, baseUrl).href;
-      const base = new URL(baseUrl);
       const candidate = new URL(resolved);
-      // Same domain only, different path from current URL
       if (candidate.hostname !== base.hostname) continue;
-      if (candidate.pathname === new URL(baseUrl).pathname) continue;
+      if (candidate.pathname === base.pathname) continue;
       if (!seen.has(resolved)) {
         seen.add(resolved);
         candidates.push(resolved);
@@ -205,18 +206,19 @@ function findMenuLinks(html: string, baseUrl: string): string[] {
     } catch { /* skip malformed */ }
   }
 
-  return candidates.slice(0, 3);
+  return candidates.slice(0, 8);
 }
 
-async function fetchHtmlText(url: string): Promise<string> {
+async function fetchHtmlRaw(url: string): Promise<{ html: string; text: string } | null> {
   try {
     const res = await fetch(url, { headers: BROWSER_HEADERS });
-    if (!res.ok) return "";
+    if (!res.ok) return null;
     const ct = res.headers.get("content-type") || "";
-    if (!ct.includes("text/html")) return "";
-    return htmlToText(await res.text());
+    if (!ct.includes("text/html")) return null;
+    const html = await res.text();
+    return { html, text: htmlToText(html) };
   } catch {
-    return "";
+    return null;
   }
 }
 
@@ -242,24 +244,48 @@ async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
     };
   }
 
-  // HTML: extract text from this page, then discover and fetch menu subpages
+  // HTML: two-level menu subpage discovery
   const html = buffer.toString("utf-8");
   const homeText = htmlToText(html);
 
-  // Find menu-related subpage links and fetch them
-  const menuLinks = findMenuLinks(html, url);
-  const subTexts = await Promise.all(menuLinks.map(link => fetchHtmlText(link)));
+  const seen = new Set<string>([url]);
 
-  const sections = [
-    `Page content (${url}):\n${homeText}`,
-    ...menuLinks.map((link, i) => subTexts[i] ? `Menu subpage (${link}):\n${subTexts[i]}` : "").filter(Boolean),
-  ];
+  // Level 1: menu links from homepage
+  const level1Links = findMenuLinks(html, url);
+  level1Links.forEach(l => seen.add(l));
 
-  const combined = sections.join("\n\n---\n\n").slice(0, 60000);
+  // Fetch level 1 pages in parallel
+  const level1Results = await Promise.all(level1Links.map(l => fetchHtmlRaw(l)));
+
+  // Level 2: discover further menu links from each level-1 page
+  const level2Links: string[] = [];
+  for (const result of level1Results) {
+    if (!result) continue;
+    for (const link of findMenuLinks(result.html, url)) {
+      if (!seen.has(link)) { seen.add(link); level2Links.push(link); }
+    }
+  }
+
+  // Fetch level 2 pages (cap total subpages at 10)
+  const toFetch2 = level2Links.slice(0, Math.max(0, 10 - level1Links.length));
+  const level2Results = await Promise.all(toFetch2.map(l => fetchHtmlRaw(l)));
+
+  // Build combined content with URL labels so Claude knows which page is which
+  const sections: string[] = [`Homepage (${url}):\n${homeText}`];
+  level1Links.forEach((link, i) => {
+    const r = level1Results[i];
+    if (r && r.text.length > 100) sections.push(`Menu page (${link}):\n${r.text}`);
+  });
+  toFetch2.forEach((link, i) => {
+    const r = level2Results[i];
+    if (r && r.text.length > 100) sections.push(`Menu page (${link}):\n${r.text}`);
+  });
+
+  const combined = sections.join("\n\n---\n\n").slice(0, 80000);
 
   return {
     type: "text",
-    text: `Restaurant menu content:\n\n${combined}`,
+    text: `Restaurant website content:\n\n${combined}`,
   };
 }
 
@@ -275,6 +301,7 @@ function normalisePairing(p: any): WinePairing {
     dish: p.dish ?? "",
     description: p.desc ?? p.description ?? "",
     course: p.course ?? "main",
+    menuSection: p.menuSection ?? null,
     wineType: p.wine ?? p.wineType ?? "",
     altWineType: p.altWine ?? p.altWineType ?? null,
     bottleSuggestion: p.suggestion ?? p.bottleSuggestion ?? "",
