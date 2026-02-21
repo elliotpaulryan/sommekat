@@ -317,7 +317,7 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-6 pt-8 sm:pt-6 pb-6">
           {(state === "idle" || state === "error") && (
             <div className="text-center mb-6">
-              <p className="text-lg text-red-950 font-extrabold max-w-lg leading-relaxed drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">
+              <p className="text-lg text-red-950 font-extrabold max-w-lg mx-auto leading-relaxed drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">
                 Upload any restaurant menu and SommeKat will find the perfect wine pairing for every dish.
               </p>
             </div>
