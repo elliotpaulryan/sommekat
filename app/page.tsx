@@ -488,31 +488,31 @@ export default function Home() {
               {recipeError && (
                 <p className="mt-3 text-sm text-red-200 font-medium text-center">{recipeError}</p>
               )}
+            </div>
 
-              <div className="mt-5 text-center">
-                <button
-                  type="button"
-                  onClick={handleRecipeSubmit}
-                  disabled={!recipeUrl.trim()}
-                  className={[
-                    "px-8 py-3 rounded-xl text-base font-extrabold tracking-wide transition-all duration-150 select-none",
-                    recipeUrl.trim()
-                      ? "text-white cursor-pointer active:translate-y-[2px] active:shadow-none"
-                      : "text-white/50 cursor-not-allowed",
-                  ].join(" ")}
-                  style={recipeUrl.trim() ? {
-                    background: "linear-gradient(180deg, #9b4d57 0%, #722F37 100%)",
-                    border: "1px solid #5a1f26",
-                    boxShadow: "0 2px 0 #4a1520, 0 4px 8px rgba(0,0,0,0.25)",
-                  } : {
-                    background: "linear-gradient(180deg, #6b3039 0%, #4a1e24 100%)",
-                    border: "1px solid #3a1218",
-                    boxShadow: "none",
-                  }}
-                >
-                  Get Wine Pairings
-                </button>
-              </div>
+            <div className="mt-5 text-center">
+              <button
+                type="button"
+                onClick={handleRecipeSubmit}
+                disabled={!recipeUrl.trim()}
+                className={[
+                  "px-8 py-3 rounded-xl text-base font-extrabold tracking-wide transition-all duration-150 select-none",
+                  recipeUrl.trim()
+                    ? "text-white cursor-pointer active:translate-y-[2px] active:shadow-none"
+                    : "text-white/50 cursor-not-allowed",
+                ].join(" ")}
+                style={recipeUrl.trim() ? {
+                  background: "linear-gradient(180deg, #9b4d57 0%, #722F37 100%)",
+                  border: "1px solid #5a1f26",
+                  boxShadow: "0 2px 0 #4a1520, 0 4px 8px rgba(0,0,0,0.25)",
+                } : {
+                  background: "linear-gradient(180deg, #6b3039 0%, #4a1e24 100%)",
+                  border: "1px solid #3a1218",
+                  boxShadow: "none",
+                }}
+              >
+                Get Wine Pairings
+              </button>
             </div>
           )}
 
