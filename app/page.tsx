@@ -81,6 +81,41 @@ function getWineColor(wineType: string): string {
   return "bg-amber-100 border-amber-400 text-amber-900";
 }
 
+function getWineCircleColor(wineType: string): string {
+  const lower = wineType.toLowerCase();
+  if (lower.includes("rosé") || lower.includes("rose") || lower.includes("blush")) {
+    return "bg-pink-400 text-white";
+  }
+  if (lower.includes("sparkling") || lower.includes("champagne") || lower.includes("prosecco") || lower.includes("cava") || lower.includes("crémant") || lower.includes("cremant") || lower.includes("franciacorta") || lower.includes("sekt")) {
+    return "bg-amber-300 text-amber-900";
+  }
+  if (
+    lower.includes("red") || lower.includes("cabernet") || lower.includes("merlot") ||
+    lower.includes("pinot noir") || lower.includes("syrah") || lower.includes("shiraz") ||
+    lower.includes("malbec") || lower.includes("tempranillo") || lower.includes("sangiovese") ||
+    lower.includes("nebbiolo") || lower.includes("zinfandel") || lower.includes("grenache") ||
+    lower.includes("mourvèdre") || lower.includes("mourvedre") || lower.includes("carmenere") ||
+    lower.includes("pinotage") || lower.includes("aglianico") || lower.includes("barbera") ||
+    lower.includes("xinomavro") || lower.includes("agiorgitiko") || lower.includes("chianti") ||
+    lower.includes("barolo") || lower.includes("barbaresco") || lower.includes("montepulciano") ||
+    lower.includes("primitivo") || lower.includes("nero d'avola") || lower.includes("dolcetto") ||
+    lower.includes("valpolicella") || lower.includes("amarone") || lower.includes("rioja") ||
+    lower.includes("garnacha") || lower.includes("monastrell") || lower.includes("touriga") ||
+    lower.includes("tannat") || lower.includes("corvina") || lower.includes("bonarda") ||
+    lower.includes("carignan") || lower.includes("cinsault") || lower.includes("gamay") ||
+    lower.includes("beaujolais") || lower.includes("bordeaux") || lower.includes("burgundy") ||
+    lower.includes("côtes du rhône") || lower.includes("cotes du rhone") ||
+    lower.includes("châteauneuf") || lower.includes("chateauneuf") ||
+    lower.includes("saint-émilion") || lower.includes("saint-julien") ||
+    lower.includes("pauillac") || lower.includes("margaux") || lower.includes("pomerol") ||
+    lower.includes("brunello") || lower.includes("lambrusco") || lower.includes("zweigelt") ||
+    lower.includes("blaufränkisch")
+  ) {
+    return "bg-red-900 text-white";
+  }
+  return "bg-amber-400 text-white";
+}
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<"restaurant" | "recipes">("restaurant");
 
@@ -496,19 +531,14 @@ export default function Home() {
           )}
 
           {recipeState === "results" && recipeResult && (
-            <div className="space-y-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-extrabold text-red-900">
-                    Wine Pairings for <span className="font-black">{recipeResult.recipeName}</span>
-                  </h2>
-                  {recipeResult.description && (
-                    <p className="mt-1 text-red-900/80 font-bold text-sm">{recipeResult.description}</p>
-                  )}
-                </div>
+            <div className="space-y-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <h2 className="text-xl font-extrabold text-red-900 leading-snug">
+                  Wine Pairings for <span className="font-black">{recipeResult.recipeName}</span>
+                </h2>
                 <button
                   onClick={handleRecipeReset}
-                  className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition-all hover:bg-stone-50 hover:border-stone-400 cursor-pointer flex-shrink-0"
+                  className="inline-flex items-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 shadow-sm transition-all hover:bg-stone-50 hover:border-stone-400 cursor-pointer self-start flex-shrink-0"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -518,9 +548,9 @@ export default function Home() {
               </div>
 
               {recipeResult.pairings.map((pairing, i) => (
-                <div key={i} className="rounded-2xl border-2 border-[#722F37] bg-white/90 shadow-md p-5">
+                <div key={i} className="rounded-2xl border-2 border-[#722F37] bg-white/90 shadow-md p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="flex-shrink-0 w-7 h-7 rounded-full bg-[#722F37] text-white text-xs font-extrabold flex items-center justify-center">
+                    <span className={`flex-shrink-0 w-7 h-7 rounded-full text-xs font-extrabold flex items-center justify-center ${getWineCircleColor(pairing.wineType)}`}>
                       {i + 1}
                     </span>
                     {pairing.wineType && (
