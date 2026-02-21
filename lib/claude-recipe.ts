@@ -108,14 +108,29 @@ Rules:
 
   const text = message.content[0].type === "text" ? message.content[0].text : "";
   const cleaned = text.replace(/```json?\n?/g, "").replace(/```\n?/g, "").trim();
-  const objStart = cleaned.indexOf("{");
-  const objEnd = cleaned.lastIndexOf("}");
 
-  if (objStart === -1 || objEnd === -1) {
+  // Extract the first complete balanced JSON object (depth-tracked, not lastIndexOf)
+  function extractJSON(str: string): string {
+    let depth = 0;
+    let start = -1;
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] === "{") {
+        if (start === -1) start = i;
+        depth++;
+      } else if (str[i] === "}") {
+        depth--;
+        if (depth === 0 && start !== -1) return str.slice(start, i + 1);
+      }
+    }
+    return "";
+  }
+
+  const jsonStr = extractJSON(cleaned);
+  if (!jsonStr) {
     throw new Error("Could not parse wine pairing response. Please try again.");
   }
 
-  const parsed = JSON.parse(cleaned.slice(objStart, objEnd + 1));
+  const parsed = JSON.parse(jsonStr);
 
   if (!parsed.recipeName) {
     throw new Error("That URL doesn't appear to contain a recipe. Please try a direct link to a recipe page.");
