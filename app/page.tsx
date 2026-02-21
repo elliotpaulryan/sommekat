@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import MenuUpload from "@/components/MenuUpload";
 import MenuResults from "@/components/MenuResults";
 import LoadingState from "@/components/LoadingState";
+import RestaurantSearch from "@/components/RestaurantSearch";
 import type { WinePairing } from "@/lib/claude";
 import type { RecipeResult } from "@/lib/claude-recipe";
 
@@ -133,6 +134,10 @@ export default function Home() {
   const [maxPrice, setMaxPrice] = useState(SLIDER_MAX);
   const [courses, setCourses] = useState<string[]>(["mains"]);
 
+  // Restaurant search state
+  const [searchedRestaurant, setSearchedRestaurant] = useState<{ name: string; website: string | null } | null>(null);
+  const [menuUploadKey, setMenuUploadKey] = useState(0);
+
   const [userCurrency, setUserCurrency] = useState("USD");
   const [currencySymbol, setCurrencySymbol] = useState("$");
   const maxIsUnlimited = maxPrice >= SLIDER_MAX;
@@ -203,6 +208,21 @@ export default function Home() {
     setPairings([]);
     setRestaurantName(null);
     setError("");
+    setSearchedRestaurant(null);
+    setFoodUrl("");
+    setMenuUploadKey((k) => k + 1);
+  };
+
+  const handleRestaurantSelect = (name: string, website: string | null) => {
+    setSearchedRestaurant({ name, website });
+    setFoodUrl(website || "");
+    setMenuUploadKey((k) => k + 1);
+  };
+
+  const handleRestaurantClear = () => {
+    setSearchedRestaurant(null);
+    setFoodUrl("");
+    setMenuUploadKey((k) => k + 1);
   };
 
   // — Recipe state —
@@ -329,8 +349,36 @@ export default function Home() {
 
           {(state === "idle" || state === "error") && (
             <form onSubmit={(e) => { e.preventDefault(); if (hasFoodMenu) handleSubmit(); }}>
+              {/* Restaurant search */}
+              <div className="mx-auto max-w-3xl mb-4">
+                <RestaurantSearch
+                  onSelect={handleRestaurantSelect}
+                  onClear={handleRestaurantClear}
+                />
+                {searchedRestaurant && (
+                  <div className={[
+                    "mt-2 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold",
+                    searchedRestaurant.website
+                      ? "bg-green-50 border border-green-200 text-green-800"
+                      : "bg-amber-50 border border-amber-200 text-amber-800",
+                  ].join(" ")}>
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {searchedRestaurant.website
+                        ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      }
+                    </svg>
+                    {searchedRestaurant.website
+                      ? `Found ${searchedRestaurant.name}'s website — menu loaded below`
+                      : `No website found for ${searchedRestaurant.name} — please upload the menu below`
+                    }
+                  </div>
+                )}
+              </div>
+
               <div className="mx-auto max-w-3xl grid gap-6 sm:grid-cols-2">
                 <MenuUpload
+                  key={menuUploadKey}
                   label="Food Menu"
                   sublabel="Drop your food menu here"
                   initialFiles={foodFiles}
