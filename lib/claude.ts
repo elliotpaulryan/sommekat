@@ -20,7 +20,7 @@ export interface WinePairing {
 
 const client = new Anthropic();
 
-function buildBasePrompt(courses: string[]): string {
+function buildBasePrompt(courses: string[], estimatePrices = false): string {
   const includeStarters = courses.includes("starters");
   const includeMains = courses.includes("mains");
   const includeDesserts = courses.includes("desserts");
@@ -60,7 +60,7 @@ ${courseInstructions.map(i => `- ${i}`).join("\n")}
 WHAT TO EXCLUDE — do NOT include any of the following:
 ${excludeList.map(i => `- ${i}`).join("\n")}
 
-For each dish, recommend a wine to pair with it. Keep the recommendation BROAD — just the grape variety or wine style (e.g. "Pinot Noir", "Chardonnay", "Shiraz", "Riesling"). Do NOT recommend specific bottles or producers unless a wine menu has been provided.
+For each dish, recommend a wine to pair with it. ${estimatePrices ? "Recommend a SPECIFIC well-known bottle and producer (e.g. 'Cloudy Bay Sauvignon Blanc' by Cloudy Bay) so that Vivino ratings and retail prices can be estimated." : "Keep the recommendation BROAD — just the grape variety or wine style (e.g. \"Pinot Noir\", \"Chardonnay\", \"Shiraz\", \"Riesling\"). Do NOT recommend specific bottles or producers unless a wine menu has been provided."}
 
 CRITICAL RULES:
 - NEVER put a wine, beer, cocktail, or any beverage in the "dish" field.
@@ -82,8 +82,8 @@ Return your response as a JSON object (no markdown, no code fences, raw JSON onl
     "region": "Wine region from the wine menu (e.g. 'Marlborough', 'Napa Valley', 'Barossa Valley') — omit if not listed on the wine menu",
     "producer": "Winery name if recommending a specific bottle — omit if not applicable",
     "rationale": "1-2 concise sentences on why this wine pairs with the dish's main component. Lead with the pairing logic, not 'the dish needs/demands'. Be slightly technical (e.g. residual sugar tempering heat, tannins binding protein, high acid cutting fat). Vary language across pairings.",
-    "vivino": "number 1.0-5.0 if specific bottle recommended, -1 if unknown — omit if no wine menu",
-    "retail": "Retail price with currency symbol if specific bottle, 'Not found' if unknown — omit if no wine menu",
+    "vivino": ${estimatePrices ? `"Estimated Vivino community rating 1.0-5.0 for the specific bottle you are recommending — MUST include, use your best knowledge"` : `"number 1.0-5.0 if specific bottle recommended, -1 if unknown — omit if no wine menu"`},
+    "retail": ${estimatePrices ? `"Estimated retail price with currency symbol for the specific bottle in the user's local market — MUST include, use your best knowledge"` : `"Retail price with currency symbol if specific bottle, 'Not found' if unknown — omit if no wine menu"`},
     "glassPrice": "Per-glass price from wine menu with symbol — omit if not listed",
     "bottlePrice": "Per-bottle price from wine menu with symbol — omit if not listed",
     "outOfRange": true (only include this field when true — omit when false)
@@ -114,8 +114,8 @@ Rules:
 
 - Same wine may be recommended for multiple dishes if genuinely the best pairing — accuracy over variety.
 - altWine: different mainstream option; omit if none.
-- vivino: MUST provide best estimate for any specific bottle; -1 if truly unknown; omit only when no wine menu.
-- retail: MUST provide best estimate for any specific bottle; "Not found" if truly unknown; omit only when no wine menu.`;
+- vivino: ${estimatePrices ? "MUST provide estimated Vivino rating for the specific bottle you recommended." : "MUST provide best estimate for any specific bottle; -1 if truly unknown; omit only when no wine menu."}
+- retail: ${estimatePrices ? "MUST provide estimated retail price for the specific bottle you recommended." : "MUST provide best estimate for any specific bottle; \"Not found\" if truly unknown; omit only when no wine menu."}`;
 }
 
 const WINE_MENU_ADDENDUM = `
@@ -239,16 +239,24 @@ function normalisePairing(p: any): WinePairing {
   };
 }
 
+function extractBalancedJSON(str: string, open: string, close: string): string {
+  let depth = 0;
+  let start = -1;
+  for (let i = 0; i < str.length; i++) {
+    if (str[i] === open) { if (start === -1) start = i; depth++; }
+    else if (str[i] === close) { depth--; if (depth === 0 && start !== -1) return str.slice(start, i + 1); }
+  }
+  return "";
+}
+
 function parseResponse(text: string): ParsedResponse {
-  console.log("Claude response:", text.slice(0, 500));
   const cleaned = text.replace(/```json?\n?/g, "").replace(/```\n?/g, "").trim();
 
   // Try parsing as object first (new format)
-  const objStart = cleaned.indexOf("{");
-  const objEnd = cleaned.lastIndexOf("}");
-  if (objStart !== -1 && objEnd !== -1) {
+  const objStr = extractBalancedJSON(cleaned, "{", "}");
+  if (objStr) {
     try {
-      const parsed = JSON.parse(cleaned.slice(objStart, objEnd + 1));
+      const parsed = JSON.parse(objStr);
       if (parsed.pairings && Array.isArray(parsed.pairings)) {
         return {
           restaurantName: parsed.restaurantName || null,
@@ -262,14 +270,11 @@ function parseResponse(text: string): ParsedResponse {
   }
 
   // Fallback: parse as array (backward compat)
-  const start = cleaned.indexOf("[");
-  const end = cleaned.lastIndexOf("]");
-  if (start === -1 || end === -1) {
-    throw new Error(
-      `No JSON found in response. Claude said: "${text.slice(0, 300)}"`
-    );
+  const arrStr = extractBalancedJSON(cleaned, "[", "]");
+  if (!arrStr) {
+    throw new Error(`No JSON found in response. Claude said: "${text.slice(0, 300)}"`);
   }
-  return { restaurantName: null, menuCurrency: null, pairings: JSON.parse(cleaned.slice(start, end + 1)).map(normalisePairing) };
+  return { restaurantName: null, menuCurrency: null, pairings: JSON.parse(arrStr).map(normalisePairing) };
 }
 
 const ESTIMATE_PRICES_ADDENDUM = `
@@ -313,7 +318,7 @@ export async function getWinePairings(
 
   const currency = wineMenu?.currency || "USD";
   const courses = wineMenu?.courses || ["mains"];
-  const systemPrompt = buildBasePrompt(courses);
+  const systemPrompt = buildBasePrompt(courses, !!wineMenu?.estimatePrices);
 
   // Variable instructions appended to user message
   let userInstructions = `- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${currency} and set "menuCurrency" to "${currency}".`;
@@ -381,7 +386,7 @@ export async function getWinePairingsFromUrl(
 
   const contentBlocks: ContentBlockParam[] = [foodBlock];
   const fallbackCurrency = currency || "USD";
-  const systemPrompt = buildBasePrompt(courses || ["mains"]);
+  const systemPrompt = buildBasePrompt(courses || ["mains"], !!estimatePrices);
   let userInstructions = `- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${fallbackCurrency} and set "menuCurrency" to "${fallbackCurrency}".`;
 
   if (wineUrl) {
