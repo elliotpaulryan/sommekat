@@ -113,7 +113,7 @@ function getWineCircleColor(wineType: string): string {
   ) {
     return "bg-red-900 text-white";
   }
-  return "bg-amber-400 text-white";
+  return "bg-amber-400 text-amber-950";
 }
 
 export default function Home() {
