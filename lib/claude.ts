@@ -155,43 +155,15 @@ function makeContentBlock(base64: string, mimeType: string): ContentBlockParam {
   };
 }
 
-async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch from URL (status ${response.status})`);
-  }
+const BROWSER_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-GB,en;q=0.9",
+  "Cache-Control": "no-cache",
+};
 
-  const contentType = response.headers.get("content-type") || "";
-  const buffer = Buffer.from(await response.arrayBuffer());
-
-  if (contentType.includes("application/pdf")) {
-    return {
-      type: "document",
-      source: {
-        type: "base64",
-        media_type: "application/pdf",
-        data: buffer.toString("base64"),
-      },
-    };
-  } else if (contentType.includes("image/")) {
-    const mediaType = contentType.split(";")[0].trim() as
-      | "image/jpeg"
-      | "image/png"
-      | "image/webp"
-      | "image/gif";
-    return {
-      type: "image",
-      source: {
-        type: "base64",
-        media_type: mediaType,
-        data: buffer.toString("base64"),
-      },
-    };
-  }
-
-  // Strip HTML tags to get plain text content
-  const html = buffer.toString("utf-8");
-  const plainText = html
+function htmlToText(html: string): string {
+  return html
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "")
@@ -204,12 +176,90 @@ async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
     .replace(/&gt;/g, ">")
     .replace(/&#\d+;/g, "")
     .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 30000);
+    .trim();
+}
+
+function findMenuLinks(html: string, baseUrl: string): string[] {
+  const linkPattern = /href=["']([^"']+)["']/gi;
+  const menuKeywords = /\b(menu|menus|food|dining|eat|carte|dishes|lunch|dinner|breakfast|starters|mains|desserts|a-la-carte)\b/i;
+  const skipExt = /\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|ttf|mp4|webp)(\?.*)?$/i;
+  const seen = new Set<string>();
+  const candidates: string[] = [];
+
+  let match;
+  while ((match = linkPattern.exec(html)) !== null) {
+    const href = match[1].trim();
+    if (!href || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("#") || skipExt.test(href)) continue;
+    if (!menuKeywords.test(href)) continue;
+    try {
+      const resolved = new URL(href, baseUrl).href;
+      const base = new URL(baseUrl);
+      const candidate = new URL(resolved);
+      // Same domain only, different path from current URL
+      if (candidate.hostname !== base.hostname) continue;
+      if (candidate.pathname === new URL(baseUrl).pathname) continue;
+      if (!seen.has(resolved)) {
+        seen.add(resolved);
+        candidates.push(resolved);
+      }
+    } catch { /* skip malformed */ }
+  }
+
+  return candidates.slice(0, 3);
+}
+
+async function fetchHtmlText(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, { headers: BROWSER_HEADERS });
+    if (!res.ok) return "";
+    const ct = res.headers.get("content-type") || "";
+    if (!ct.includes("text/html")) return "";
+    return htmlToText(await res.text());
+  } catch {
+    return "";
+  }
+}
+
+async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
+  const response = await fetch(url, { headers: BROWSER_HEADERS });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch from URL (status ${response.status})`);
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  const buffer = Buffer.from(await response.arrayBuffer());
+
+  if (contentType.includes("application/pdf")) {
+    return {
+      type: "document",
+      source: { type: "base64", media_type: "application/pdf", data: buffer.toString("base64") },
+    };
+  } else if (contentType.includes("image/")) {
+    const mediaType = contentType.split(";")[0].trim() as "image/jpeg" | "image/png" | "image/webp" | "image/gif";
+    return {
+      type: "image",
+      source: { type: "base64", media_type: mediaType, data: buffer.toString("base64") },
+    };
+  }
+
+  // HTML: extract text from this page, then discover and fetch menu subpages
+  const html = buffer.toString("utf-8");
+  const homeText = htmlToText(html);
+
+  // Find menu-related subpage links and fetch them
+  const menuLinks = findMenuLinks(html, url);
+  const subTexts = await Promise.all(menuLinks.map(link => fetchHtmlText(link)));
+
+  const sections = [
+    `Page content (${url}):\n${homeText}`,
+    ...menuLinks.map((link, i) => subTexts[i] ? `Menu subpage (${link}):\n${subTexts[i]}` : "").filter(Boolean),
+  ];
+
+  const combined = sections.join("\n\n---\n\n").slice(0, 60000);
 
   return {
     type: "text",
-    text: `Menu from URL: ${url}\n\nPage content:\n${plainText}`,
+    text: `Restaurant menu content:\n\n${combined}`,
   };
 }
 
