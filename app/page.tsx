@@ -317,7 +317,7 @@ export default function Home() {
         <div className="mx-auto max-w-5xl px-6 pt-8 sm:pt-6 pb-6">
           {(state === "idle" || state === "error") && (
             <div className="text-center mb-6">
-              <p className="inline-block bg-white/30 backdrop-blur-sm rounded-2xl px-5 py-3 text-lg text-red-900 font-bold max-w-lg leading-relaxed">
+              <p className="text-lg text-red-950 font-extrabold max-w-lg leading-relaxed drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">
                 Upload any restaurant menu and SommeKat will provide AI-powered wine pairings.
               </p>
             </div>
@@ -348,10 +348,9 @@ export default function Home() {
 
               {/* Course selection */}
               <div className="mx-auto max-w-3xl mt-6 text-center">
-                <div className="inline-block bg-white/30 backdrop-blur-sm rounded-2xl px-5 py-3">
-                <p className="text-sm text-red-900 font-bold mb-2">Mains are always paired</p>
+                <p className="text-sm text-red-950 font-extrabold mb-2 drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">Mains are always paired</p>
                 <div className="flex items-center justify-center gap-3">
-                  <span className="text-sm font-bold text-red-900">Optional Inclusions:</span>
+                  <span className="text-sm font-extrabold text-red-950 drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">Optional Inclusions:</span>
                   {[
                     { id: "starters", label: "Starters" },
                     { id: "desserts", label: "Desserts" },
@@ -379,7 +378,6 @@ export default function Home() {
                       </button>
                     );
                   })}
-                </div>
                 </div>
               </div>
 
@@ -466,11 +464,9 @@ export default function Home() {
       <div className={activeTab === "recipes" ? "" : "hidden"}>
         <div className="mx-auto max-w-3xl px-6 pt-8 pb-10">
           <div className="text-center mb-8">
-            <div className="inline-block bg-white/30 backdrop-blur-sm rounded-2xl px-6 py-4">
-<p className="text-red-900 font-bold text-base max-w-lg mx-auto">
-                Cooking at home? Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your dish.
-              </p>
-            </div>
+            <p className="text-base text-red-950 font-extrabold max-w-lg mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">
+              Cooking at home? Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your dish.
+            </p>
           </div>
 
           {(recipeState === "idle" || recipeState === "error") && (
