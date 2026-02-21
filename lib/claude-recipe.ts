@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { ContentBlockParam } from "@anthropic-ai/sdk/resources/messages";
 
 const client = new Anthropic();
 
@@ -147,4 +148,106 @@ Rules:
       rationale: p.rationale ?? "",
     })),
   };
+}
+
+function makeContentBlock(base64: string, mimeType: string): ContentBlockParam {
+  if (mimeType === "application/pdf") {
+    return { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } };
+  }
+  return { type: "image", source: { type: "base64", media_type: mimeType as "image/jpeg" | "image/png" | "image/webp" | "image/gif", data: base64 } };
+}
+
+function buildRecipePrompt(userCountry?: string): string {
+  return `Based on the recipe shown in the image(s), recommend wines that would pair well with this dish when served at home.
+
+Return a JSON object (no markdown, no code fences, raw JSON only) with this structure:
+{
+  "recipeName": "The name of the recipe or dish",
+  "description": "1-2 sentences describing the finished dish — its main flavours, textures, and cooking style",
+  "pairings": [
+    {
+      "wineType": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
+      "suggestion": "2-4 word style descriptor (e.g. 'Crisp Dry White', 'Medium-Bodied Red') — no grape names here",
+      "winery": "A specific winery that makes an excellent example of this style — choose a producer that is well-regarded and widely stocked ${userCountry ? `in ${userCountry}` : "internationally"}. No vintage year.",
+      "blend": "The specific wine name or cuvée from that producer (e.g. 'Reserve Chardonnay', 'Estate Pinot Noir'). No vintage year.",
+      "rationale": "1-2 concise sentences on why this wine works with this dish. Focus on the main ingredients and cooking method. Be slightly technical — mention specific wine characteristics (e.g. acidity, tannin structure, residual sugar) and how they interact with the dish. Write for a curious home cook who wants to learn something. Vary language across recommendations."
+    }
+  ]
+}
+
+Rules:
+- Focus pairing logic on the PRIMARY protein or main ingredient first, then the cooking method and dominant flavours
+- IMPORTANT: Base wine selection purely on flavour compatibility — DO NOT choose wines based on the geographic origin of the dish. Ignore where the dish comes from entirely.
+- The user is${userCountry ? ` in ${userCountry}` : " an international user"}. Recommend grape varieties and wine styles that are widely available there, and choose a winery whose bottles can realistically be found in a mainstream supermarket or wine retailer${userCountry ? ` in ${userCountry}` : ""}.
+- Always provide exactly 3 pairings, ranked from best to third-best match
+- Keep suggestions accessible — avoid extremely obscure varieties
+- For winery and blend: choose real, well-known producers. Do NOT include vintage year in either field.
+- If the image does not appear to contain a recipe or dish, set recipeName to null`;
+}
+
+function parseRecipeResponse(text: string): RecipeResult {
+  const cleaned = text.replace(/```json?\n?/g, "").replace(/```\n?/g, "").trim();
+
+  function extractJSON(str: string): string {
+    let depth = 0;
+    let start = -1;
+    for (let i = 0; i < str.length; i++) {
+      if (str[i] === "{") {
+        if (start === -1) start = i;
+        depth++;
+      } else if (str[i] === "}") {
+        depth--;
+        if (depth === 0 && start !== -1) return str.slice(start, i + 1);
+      }
+    }
+    return "";
+  }
+
+  const jsonStr = extractJSON(cleaned);
+  if (!jsonStr) throw new Error("Could not parse wine pairing response. Please try again.");
+
+  const parsed = JSON.parse(jsonStr);
+  if (!parsed.recipeName) throw new Error("No recipe detected in the image. Please try a photo of a recipe or dish.");
+
+  return {
+    recipeName: parsed.recipeName,
+    description: parsed.description ?? "",
+    pairings: (parsed.pairings ?? []).map((p: any) => ({
+      wineType: p.wineType ?? "",
+      suggestion: p.suggestion ?? "",
+      winery: p.winery ?? null,
+      blend: p.blend ?? null,
+      rationale: p.rationale ?? "",
+    })),
+  };
+}
+
+export async function getRecipePairingsFromFiles(
+  files: Array<{ base64: string; mimeType: string }>,
+  userCountry?: string
+): Promise<RecipeResult> {
+  const contentBlocks: ContentBlockParam[] = [];
+
+  if (files.length > 1) {
+    contentBlocks.push({ type: "text", text: `The recipe is provided across ${files.length} images:` });
+  }
+  for (const f of files) {
+    contentBlocks.push(makeContentBlock(f.base64, f.mimeType));
+  }
+  contentBlocks.push({ type: "text", text: buildRecipePrompt(userCountry) });
+
+  const message = await client.messages.create({
+    model: "claude-sonnet-4-5-20250929",
+    max_tokens: 1500,
+    temperature: 0,
+    system: [{ type: "text", text: RECIPE_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: contentBlocks }],
+  });
+
+  if (message.stop_reason === "max_tokens") {
+    throw new Error("Response was too long. Please try again.");
+  }
+
+  const text = message.content[0].type === "text" ? message.content[0].text : "";
+  return parseRecipeResponse(text);
 }
