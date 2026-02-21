@@ -251,13 +251,15 @@ export default function Home() {
               className="w-36 h-36 object-contain drop-shadow-2xl rounded-full border-4 border-red-900"
             />
           </button>
-          <div className="text-center">
-            <button onClick={() => setActiveTab("restaurant")} className="cursor-pointer bg-transparent border-0 p-0">
-              <h1 className="text-[2.75rem] font-bold text-red-900" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
-                SommeKat
-              </h1>
-            </button>
-            <p className="mt-1 inline-block bg-white/30 backdrop-blur-sm rounded-full px-3 py-0.5 text-sm text-red-900 tracking-widest uppercase font-bold">
+          <div className="flex flex-col items-center">
+            <h1
+              onClick={() => setActiveTab("restaurant")}
+              className="cursor-pointer text-[2.75rem] font-bold text-red-900"
+              style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}
+            >
+              SommeKat
+            </h1>
+            <p className="mt-1 bg-white/30 backdrop-blur-sm rounded-full px-3 py-0.5 text-sm text-red-900 tracking-widest uppercase font-bold">
               AI-powered wine pairing
             </p>
           </div>
@@ -271,13 +273,15 @@ export default function Home() {
               className="w-40 h-40 object-contain drop-shadow-2xl rounded-full border-4 border-red-900"
             />
           </button>
-          <div className="pb-2">
-            <button onClick={() => setActiveTab("restaurant")} className="cursor-pointer bg-transparent border-0 p-0">
-              <h1 className="text-[5rem] font-bold text-red-900" style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}>
-                SommeKat
-              </h1>
-            </button>
-            <p className="mt-1 inline-block bg-white/30 backdrop-blur-sm rounded-full px-3 py-0.5 text-base text-red-900 tracking-widest uppercase font-bold">
+          <div className="pb-2 flex flex-col items-start">
+            <h1
+              onClick={() => setActiveTab("restaurant")}
+              className="cursor-pointer text-[5rem] font-bold text-red-900"
+              style={{ fontFamily: "var(--font-baloo)", textShadow: "0 2px 10px rgba(255,255,255,0.3)", letterSpacing: "0.02em" }}
+            >
+              SommeKat
+            </h1>
+            <p className="mt-1 bg-white/30 backdrop-blur-sm rounded-full px-3 py-0.5 text-base text-red-900 tracking-widest uppercase font-bold">
               AI-powered wine pairing
             </p>
           </div>

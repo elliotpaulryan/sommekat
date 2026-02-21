@@ -35,13 +35,18 @@ export default function RootLayout({
         {/* Reset zoom to 1 on every launch — iOS PWA remembers last zoom level otherwise */}
         <script dangerouslySetInnerHTML={{ __html: `
           (function() {
-            var meta = document.querySelector('meta[name="viewport"]');
-            if (meta) {
-              meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
-              setTimeout(function() {
-                meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes');
-              }, 50);
+            function resetZoom() {
+              var meta = document.querySelector('meta[name="viewport"]');
+              if (meta) {
+                meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+                setTimeout(function() {
+                  meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes');
+                }, 300);
+              }
             }
+            resetZoom();
+            window.addEventListener('pageshow', resetZoom);
+            window.addEventListener('focus', resetZoom);
           })();
         `}} />
       </head>
