@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     // Handle URL submission (JSON body)
     if (contentType.includes("application/json")) {
-      const { url, wineUrl, currency, minPrice, maxPrice, courses } = await request.json();
+      const { url, wineUrl, currency, minPrice, maxPrice, courses, estimatePrices } = await request.json();
 
       if (!url || typeof url !== "string") {
         return NextResponse.json({ error: "No URL provided" }, { status: 400 });
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       }
 
       const parsedCourses = Array.isArray(courses) ? courses : ["mains"];
-      const result = await getWinePairingsFromUrl(url, wineUrl || undefined, currency || "USD", minPrice, maxPrice, parsedCourses);
+      const result = await getWinePairingsFromUrl(url, wineUrl || undefined, currency || "USD", minPrice, maxPrice, parsedCourses, !!estimatePrices);
       return NextResponse.json({ pairings: result.pairings, restaurantName: result.restaurantName, menuCurrency: result.menuCurrency });
     }
 
@@ -110,6 +110,7 @@ export async function POST(request: NextRequest) {
     const minPriceField = formData.get("minPrice") as string | null;
     const maxPriceField = formData.get("maxPrice") as string | null;
     const coursesField = formData.get("courses") as string | null;
+    const estimatePricesField = formData.get("estimatePrices") as string | null;
     const parsedCourses = coursesField ? JSON.parse(coursesField) : ["mains"];
 
     const result = await getWinePairings(foodFileData, {
@@ -119,6 +120,7 @@ export async function POST(request: NextRequest) {
       minPrice: minPriceField ? Number(minPriceField) : undefined,
       maxPrice: maxPriceField ? Number(maxPriceField) : undefined,
       courses: parsedCourses,
+      estimatePrices: estimatePricesField === "true",
     });
 
     return NextResponse.json({ pairings: result.pairings, restaurantName: result.restaurantName, menuCurrency: result.menuCurrency });

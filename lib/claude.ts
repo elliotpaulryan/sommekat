@@ -272,6 +272,22 @@ function parseResponse(text: string): ParsedResponse {
   return { restaurantName: null, menuCurrency: null, pairings: JSON.parse(cleaned.slice(start, end + 1)).map(normalisePairing) };
 }
 
+const ESTIMATE_PRICES_ADDENDUM = `
+No wine list has been provided. However, please estimate the following fields from your knowledge for each pairing — OVERRIDE the 'omit if no wine menu' rule for these two fields only:
+- "vivino": Your best estimate of a typical Vivino community rating (1.0–5.0) for the wine style you are recommending. Use your training knowledge of typical ratings for this grape/style.
+- "retail": Estimated retail price with currency symbol for a good-quality, widely available bottle of this wine style in the user's local market.`;
+
+function buildBudgetPrompt(minPrice: number | undefined, maxPrice: number | undefined, currency: string): string {
+  if (minPrice == null && maxPrice == null) return "";
+  if (minPrice != null && maxPrice != null) {
+    return `\n\nThe user's preferred bottle budget is ${minPrice}–${maxPrice} ${currency}. Recommend wines that fit comfortably within this price range at retail. Only go outside this range if no suitable pairing exists within budget, in which case set "outOfRange" to true.`;
+  }
+  if (minPrice != null) {
+    return `\n\nThe user's minimum bottle budget is ${minPrice} ${currency} with no upper limit.`;
+  }
+  return "";
+}
+
 interface WineMenuOptions {
   wineMenuFiles?: Array<{ base64: string; mimeType: string }>;
   wineMenuUrl?: string;
@@ -279,6 +295,7 @@ interface WineMenuOptions {
   minPrice?: number;
   maxPrice?: number;
   courses?: string[];
+  estimatePrices?: boolean;
 }
 
 export async function getWinePairings(
@@ -321,6 +338,9 @@ export async function getWinePairings(
     );
     userInstructions += WINE_MENU_ADDENDUM;
     userInstructions += buildPriceRangePrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
+  } else if (wineMenu?.estimatePrices) {
+    userInstructions += ESTIMATE_PRICES_ADDENDUM;
+    userInstructions += buildBudgetPrompt(wineMenu.minPrice, wineMenu.maxPrice, currency);
   }
 
   contentBlocks.push({ type: "text", text: userInstructions });
@@ -354,7 +374,8 @@ export async function getWinePairingsFromUrl(
   currency?: string,
   minPrice?: number,
   maxPrice?: number,
-  courses?: string[]
+  courses?: string[],
+  estimatePrices?: boolean
 ): Promise<ParsedResponse> {
   const foodBlock = await fetchUrlAsContentBlock(url);
 
@@ -371,6 +392,9 @@ export async function getWinePairingsFromUrl(
     );
     userInstructions += WINE_MENU_ADDENDUM;
     userInstructions += buildPriceRangePrompt(minPrice, maxPrice, currency || "USD");
+  } else if (estimatePrices) {
+    userInstructions += ESTIMATE_PRICES_ADDENDUM;
+    userInstructions += buildBudgetPrompt(minPrice, maxPrice, currency || "USD");
   }
 
   contentBlocks.push({ type: "text", text: userInstructions });

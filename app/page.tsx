@@ -150,6 +150,8 @@ export default function Home() {
 
   const hasFoodMenu = foodFiles.length > 0 || !!foodUrl.trim();
   const hasWineMenu = wineFiles.length > 0 || !!wineUrl.trim();
+  const showPriceSlider = hasWineMenu || !!searchedRestaurant;
+  const estimatePrices = !!searchedRestaurant && !hasWineMenu;
 
   const handleSubmit = async () => {
     setState("uploading");
@@ -168,6 +170,10 @@ export default function Home() {
         if (hasWineMenu) {
           formData.append("minPrice", String(minPrice));
           if (!maxIsUnlimited) formData.append("maxPrice", String(maxPrice));
+        } else if (estimatePrices) {
+          formData.append("estimatePrices", "true");
+          formData.append("minPrice", String(minPrice));
+          if (!maxIsUnlimited) formData.append("maxPrice", String(maxPrice));
         }
 
         response = await fetch("/api/pair", {
@@ -184,6 +190,7 @@ export default function Home() {
             currency: userCurrency,
             courses,
             ...(hasWineMenu ? { minPrice, ...(maxIsUnlimited ? {} : { maxPrice }) } : {}),
+            ...(estimatePrices ? { estimatePrices: true, minPrice, ...(maxIsUnlimited ? {} : { maxPrice }) } : {}),
           }),
         });
       }
@@ -451,7 +458,7 @@ export default function Home() {
               </div>
 
               {/* Price range slider */}
-              {hasWineMenu && (
+              {showPriceSlider && (
                 <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
                   <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range (Bottle)</p>
                   <div className="flex items-center gap-3">
