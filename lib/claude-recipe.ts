@@ -86,6 +86,7 @@ Rules:
   const message = await client.messages.create({
     model: "claude-sonnet-4-5-20250929",
     max_tokens: 1500,
+    temperature: 0,
     system: [{ type: "text", text: RECIPE_SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: userPrompt }],
   });
