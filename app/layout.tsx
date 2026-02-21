@@ -32,6 +32,18 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="SommeKat" />
         <meta name="theme-color" content="#4a1e24" />
+        {/* Reset zoom to 1 on every launch — iOS PWA remembers last zoom level otherwise */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            var meta = document.querySelector('meta[name="viewport"]');
+            if (meta) {
+              meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+              setTimeout(function() {
+                meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes');
+              }, 50);
+            }
+          })();
+        `}} />
       </head>
       <body className={`min-h-screen text-stone-800 antialiased ${julius.className} ${titleFont.variable}`}>
         {children}
