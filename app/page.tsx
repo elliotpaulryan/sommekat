@@ -467,8 +467,7 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-6 pt-8 pb-10">
           <div className="text-center mb-8">
             <div className="inline-block bg-white/30 backdrop-blur-sm rounded-2xl px-6 py-4">
-              <h2 className="text-2xl font-extrabold text-red-900 mb-2">Recipe Wine Pairing</h2>
-              <p className="text-red-900 font-bold text-base max-w-lg mx-auto">
+<p className="text-red-900 font-bold text-base max-w-lg mx-auto">
                 Cooking at home? Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your dish.
               </p>
             </div>
