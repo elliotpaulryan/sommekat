@@ -541,7 +541,7 @@ export default function Home() {
         <div className="mx-auto max-w-3xl px-6 pt-8 pb-10">
           <div className="text-center mb-8">
             <p className="text-base text-red-950 font-extrabold max-w-lg mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.8)]">
-              Cooking at home? Paste a link to any online recipe and SommeKat will recommend the perfect wines to serve alongside your dish.
+              Cooking at home? Paste a link to any online recipe or take a photo, and SommeKat will recommend the perfect wines to serve alongside your dish.
             </p>
           </div>
 
@@ -550,7 +550,7 @@ export default function Home() {
               <MenuUpload
                 key={recipeUploadKey}
                 label="Recipe"
-                sublabel="Drop a photo or screenshot of your recipe"
+                sublabel="Paste a link, drop a photo, or take a picture"
                 initialFiles={recipeFiles}
                 initialUrl={recipeUrl}
                 onFilesChange={setRecipeFiles}
