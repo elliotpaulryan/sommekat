@@ -220,33 +220,35 @@ export default function MenuResults({ pairings, restaurantName, onReset }: MenuR
                   )}
                 </div>
 
-                {/* Badges row — only show when a specific bottle is recommended (wine list uploaded) */}
+                {/* Badges row — only show when vivino/retail estimated or wine list uploaded */}
                 {(pairing.vivinoRating != null || pairing.restaurantPriceGlass || pairing.restaurantPriceBottle || pairing.retailPrice) && (
                   <div className="mt-3 space-y-2">
-                    {/* Glass + Bottle row */}
-                    {pairing.restaurantPriceGlass ? (
-                      <div className="flex rounded-lg border border-blue-200 overflow-hidden">
-                        <div className="flex-1 bg-sky-50 p-2 text-center min-w-0">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Glass</p>
-                          <p className="text-base font-bold text-sky-900 mt-0.5 truncate">
-                            {formatPrice(pairing.restaurantPriceGlass)}
-                          </p>
+                    {/* Glass + Bottle row — only when restaurant prices exist */}
+                    {(pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
+                      pairing.restaurantPriceGlass ? (
+                        <div className="flex rounded-lg border border-blue-200 overflow-hidden">
+                          <div className="flex-1 bg-sky-50 p-2 text-center min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">Glass</p>
+                            <p className="text-base font-bold text-sky-900 mt-0.5 truncate">
+                              {formatPrice(pairing.restaurantPriceGlass)}
+                            </p>
+                          </div>
+                          <div className="w-px bg-blue-200" />
+                          <div className="flex-1 bg-blue-50 p-2 text-center min-w-0">
+                            <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Bottle</p>
+                            <p className="text-base font-bold text-blue-900 mt-0.5 truncate">
+                              {formatPrice(pairing.restaurantPriceBottle)}
+                            </p>
+                          </div>
                         </div>
-                        <div className="w-px bg-blue-200" />
-                        <div className="flex-1 bg-blue-50 p-2 text-center min-w-0">
+                      ) : (
+                        <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-center">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Bottle</p>
-                          <p className="text-base font-bold text-blue-900 mt-0.5 truncate">
+                          <p className="text-base font-bold text-blue-900 mt-0.5">
                             {formatPrice(pairing.restaurantPriceBottle)}
                           </p>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="rounded-lg bg-blue-50 border border-blue-200 p-2 text-center">
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">Bottle</p>
-                        <p className="text-base font-bold text-blue-900 mt-0.5">
-                          {formatPrice(pairing.restaurantPriceBottle)}
-                        </p>
-                      </div>
+                      )
                     )}
                     {/* Vivino + Retail row */}
                     <div className="grid grid-cols-2 gap-2">
