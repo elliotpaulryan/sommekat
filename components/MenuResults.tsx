@@ -198,6 +198,9 @@ export default function MenuResults({ pairings, restaurantName, onReset }: MenuR
                     </span>
                   )}
                 </div>
+                {pairing.region && (
+                  <p className="text-sm text-stone-500 font-medium mt-0.5">{pairing.region}</p>
+                )}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span
                     className={`inline-block rounded-full border px-3 py-0.5 text-xs font-semibold ${getWineColor(

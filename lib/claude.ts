@@ -8,6 +8,7 @@ export interface WinePairing {
   wineType: string;
   altWineType: string | null;
   bottleSuggestion: string;
+  region: string | null;
   producer: string | null;
   rationale: string;
   vivinoRating: number | null;
@@ -77,7 +78,8 @@ Return your response as a JSON object (no markdown, no code fences, raw JSON onl
     "course": "starter | main | dessert",
     "wine": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
     "altWine": "Mainstream alternative — omit if none",
-    "suggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: exact bottle name from list.",
+    "suggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: wine name WITHOUT region (e.g. 'Cloudy Bay Sauvignon Blanc', not 'Cloudy Bay Marlborough Sauvignon Blanc').",
+    "region": "Wine region from the wine menu (e.g. 'Marlborough', 'Napa Valley', 'Barossa Valley') — omit if not listed on the wine menu",
     "producer": "Winery name if recommending a specific bottle — omit if not applicable",
     "rationale": "1-2 concise sentences on why this wine pairs with the dish's main component. Lead with the pairing logic, not 'the dish needs/demands'. Be slightly technical (e.g. residual sugar tempering heat, tannins binding protein, high acid cutting fat). Vary language across pairings.",
     "vivino": "number 1.0-5.0 if specific bottle recommended, -1 if unknown — omit if no wine menu",
@@ -226,6 +228,7 @@ function normalisePairing(p: any): WinePairing {
     wineType: p.wine ?? p.wineType ?? "",
     altWineType: p.altWine ?? p.altWineType ?? null,
     bottleSuggestion: p.suggestion ?? p.bottleSuggestion ?? "",
+    region: p.region ?? null,
     producer: p.producer ?? null,
     rationale: p.rationale ?? "",
     vivinoRating: p.vivino ?? p.vivinoRating ?? null,
