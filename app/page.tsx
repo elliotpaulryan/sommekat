@@ -476,7 +476,7 @@ export default function Home() {
 
           {(recipeState === "idle" || recipeState === "error") && (
             <div className="rounded-3xl bg-wine-dark p-6">
-              <p className="text-xl font-medium text-burgundy-200 mb-3 text-center">Recipe URL</p>
+              <p className="text-xl font-medium text-burgundy-200 mb-3 text-center">Recipe</p>
               <input
                 type="url"
                 value={recipeUrl}
