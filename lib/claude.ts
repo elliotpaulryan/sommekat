@@ -159,9 +159,19 @@ function makeContentBlock(base64: string, mimeType: string): ContentBlockParam {
 
 const BROWSER_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-  "Accept-Language": "en-GB,en;q=0.9",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+  "Accept-Language": "en-GB,en;q=0.9,en-US;q=0.8",
+  "Accept-Encoding": "gzip, deflate, br",
   "Cache-Control": "no-cache",
+  "Pragma": "no-cache",
+  "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  "Sec-Ch-Ua-Mobile": "?0",
+  "Sec-Ch-Ua-Platform": '"macOS"',
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Upgrade-Insecure-Requests": "1",
 };
 
 function htmlToText(html: string): string {
@@ -222,10 +232,33 @@ async function fetchHtmlRaw(url: string): Promise<{ html: string; text: string }
   }
 }
 
+// Common menu subpaths to try directly when the homepage blocks us
+const MENU_DIRECT_PATHS = [
+  "/menu", "/menus", "/food", "/food-menu", "/our-menu",
+  "/eat", "/dining", "/restaurant", "/what-we-serve", "/our-food",
+];
+
 async function fetchUrlAsContentBlock(url: string): Promise<ContentBlockParam> {
-  const response = await fetch(url, { headers: BROWSER_HEADERS });
+  let response = await fetch(url, { headers: BROWSER_HEADERS });
+
+  // On access-denied, attempt well-known menu subpaths directly before giving up
+  if (!response.ok && (response.status === 403 || response.status === 401 || response.status === 429)) {
+    const origin = new URL(url).origin;
+    const directResults = await Promise.all(
+      MENU_DIRECT_PATHS.map(path => fetchHtmlRaw(origin + path))
+    );
+    const validDirect = directResults.filter((r): r is { html: string; text: string } => r !== null && r.text.length > 100);
+    if (validDirect.length > 0) {
+      const combined = validDirect.map(r => r.text).join("\n\n---\n\n").slice(0, 80000);
+      return { type: "text", text: `Restaurant menu content:\n\n${combined}` };
+    }
+    throw new Error(
+      "This restaurant's website is blocking automated access. Please upload the menu as a photo or PDF instead."
+    );
+  }
+
   if (!response.ok) {
-    throw new Error(`Failed to fetch from URL (status ${response.status})`);
+    throw new Error(`Could not load the restaurant's website (status ${response.status}). Please upload the menu as a photo or PDF instead.`);
   }
 
   const contentType = response.headers.get("content-type") || "";
