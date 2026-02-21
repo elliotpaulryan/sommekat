@@ -470,50 +470,45 @@ export default function Home() {
           </div>
 
           {(recipeState === "idle" || recipeState === "error") && (
-            <div className="rounded-3xl bg-wine-dark p-6">
-              <input
-                type="url"
-                value={recipeUrl}
-                onChange={(e) => setRecipeUrl(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleRecipeSubmit(); }}
-                placeholder="https://www.example.com/my-favourite-recipe"
-                className={[
-                  "w-full rounded-xl border px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-wine/50 focus:border-wine transition-all",
-                  recipeUrl.trim()
-                    ? "border-green-500 bg-green-50/80 shadow-[0_0_0_2px_rgba(34,197,94,0.15)]"
-                    : "border-burgundy-300/40 bg-cream",
-                ].join(" ")}
-              />
+            <>
+              <div className="rounded-3xl bg-wine-dark p-6">
+                <input
+                  type="url"
+                  value={recipeUrl}
+                  onChange={(e) => setRecipeUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleRecipeSubmit(); }}
+                  placeholder="https://www.example.com/my-favourite-recipe"
+                  className={[
+                    "w-full rounded-xl border px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-wine/50 focus:border-wine transition-all",
+                    recipeUrl.trim()
+                      ? "border-green-500 bg-green-50/80 shadow-[0_0_0_2px_rgba(34,197,94,0.15)]"
+                      : "border-burgundy-300/40 bg-cream",
+                  ].join(" ")}
+                />
+                {recipeError && (
+                  <p className="mt-3 text-sm text-red-200 font-medium text-center">{recipeError}</p>
+                )}
+              </div>
 
-              {recipeError && (
-                <p className="mt-3 text-sm text-red-200 font-medium text-center">{recipeError}</p>
-              )}
-            </div>
-
-            <div className="mt-5 text-center">
-              <button
-                type="button"
-                onClick={handleRecipeSubmit}
-                disabled={!recipeUrl.trim()}
-                className={[
-                  "px-8 py-3 rounded-xl text-base font-extrabold tracking-wide transition-all duration-150 select-none",
-                  recipeUrl.trim()
-                    ? "text-white cursor-pointer active:translate-y-[2px] active:shadow-none"
-                    : "text-white/50 cursor-not-allowed",
-                ].join(" ")}
-                style={recipeUrl.trim() ? {
-                  background: "linear-gradient(180deg, #9b4d57 0%, #722F37 100%)",
-                  border: "1px solid #5a1f26",
-                  boxShadow: "0 2px 0 #4a1520, 0 4px 8px rgba(0,0,0,0.25)",
-                } : {
-                  background: "linear-gradient(180deg, #6b3039 0%, #4a1e24 100%)",
-                  border: "1px solid #3a1218",
-                  boxShadow: "none",
-                }}
-              >
-                Get Wine Pairings
-              </button>
-            </div>
+              <div className="mt-8 text-center">
+                <button
+                  type="button"
+                  onClick={handleRecipeSubmit}
+                  disabled={!recipeUrl.trim()}
+                  className={[
+                    "inline-flex items-center gap-2 rounded-xl px-10 py-4 text-lg font-bold text-white border-t-2 border-l-2 border-r-2 border-b-4 transition-all",
+                    recipeUrl.trim()
+                      ? "border-t-white/30 border-l-white/20 border-r-black/20 border-b-black/30 bg-gradient-to-b from-wine-light to-wine shadow-[0_4px_12px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] cursor-pointer hover:from-wine hover:to-wine-light hover:shadow-[0_6px_16px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.25)] hover:scale-105 active:scale-[0.98] active:border-b-2 active:shadow-[0_2px_6px_rgba(0,0,0,0.3),inset_0_1px_3px_rgba(0,0,0,0.2)]"
+                      : "border-t-white/10 border-l-white/10 border-r-black/10 border-b-black/10 bg-gradient-to-b from-wine-light/40 to-wine/40 shadow-none opacity-50 cursor-not-allowed grayscale-[30%] pointer-events-none",
+                  ].join(" ")}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  Get Wine Pairings
+                </button>
+              </div>
+            </>
           )}
 
           {recipeState === "loading" && (
