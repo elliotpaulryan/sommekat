@@ -145,18 +145,16 @@ function PairingCard({ pairing }: { pairing: WinePairing }) {
           <p className="text-xs font-bold uppercase tracking-wider text-stone-800 mb-2">
             Paired Wine
           </p>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-xl font-bold text-stone-900">
-              {pairing.bottleSuggestion}
-            </h3>
-            {(pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-wine text-white px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide">
-                On Menu
-              </span>
-            )}
-          </div>
+          <h3 className="text-xl font-bold text-stone-900">
+            {pairing.bottleSuggestion}
+          </h3>
           {pairing.region && (
             <p className="text-sm text-stone-500 font-medium mt-0.5">{pairing.region}</p>
+          )}
+          {(pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-wine text-white px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide mt-1">
+              On Menu
+            </span>
           )}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <span

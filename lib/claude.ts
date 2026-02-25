@@ -80,7 +80,7 @@ Return your response as a JSON object (no markdown, no code fences, raw JSON onl
     "menuSection": "Only include when the restaurant website has multiple distinct menus/meal periods (e.g. 'Breakfast', 'Brunch', 'Lunch', 'Dinner', 'Tasting Menu', 'All Day', 'Bar Menu'). Use the exact menu name as it appears on the site. Omit if there is only one menu or if unclear.",
     "wine": "Grape variety or wine style (e.g. Pinot Noir, Chardonnay)",
     "altWine": "Mainstream alternative — omit if none",
-    "suggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: wine name WITHOUT region (e.g. 'Cloudy Bay Sauvignon Blanc', not 'Cloudy Bay Marlborough Sauvignon Blanc').",
+    "suggestion": "No wine menu: 2-4 word style descriptor (e.g. 'Dry White', 'Bold Full-Bodied Red') — no grape names. Wine menu provided: wine name ONLY, never include region here (e.g. 'Cloudy Bay Sauvignon Blanc' NOT 'Cloudy Bay Marlborough Sauvignon Blanc'). Region belongs in the 'region' field only.",
     "region": "Wine region from the wine menu (e.g. 'Marlborough', 'Napa Valley', 'Barossa Valley') — omit if not listed on the wine menu",
     "producer": "Winery name if recommending a specific bottle — omit if not applicable",
     "rationale": "1-2 concise sentences on why this wine pairs with the dish's main component. Lead with the pairing logic, not 'the dish needs/demands'. Be slightly technical (e.g. residual sugar tempering heat, tannins binding protein, high acid cutting fat). Vary language across pairings.",
