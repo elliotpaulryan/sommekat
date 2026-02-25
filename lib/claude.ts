@@ -136,6 +136,8 @@ function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | 
   return "";
 }
 
+const CLAUDE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
 function makeContentBlock(base64: string, mimeType: string): ContentBlockParam {
   if (mimeType === "application/pdf") {
     return {
@@ -147,11 +149,13 @@ function makeContentBlock(base64: string, mimeType: string): ContentBlockParam {
       },
     };
   }
+  // Normalise any unsupported type (HEIC, BMP, TIFF, etc.) to JPEG
+  const safeType = CLAUDE_IMAGE_TYPES.has(mimeType) ? mimeType : "image/jpeg";
   return {
     type: "image",
     source: {
       type: "base64",
-      media_type: mimeType as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
+      media_type: safeType as "image/jpeg" | "image/png" | "image/webp" | "image/gif",
       data: base64,
     },
   };

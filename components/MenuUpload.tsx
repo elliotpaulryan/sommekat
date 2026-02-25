@@ -13,6 +13,9 @@ interface MenuUploadProps {
 }
 
 const MAX_IMAGE_SIZE = 3.5 * 1024 * 1024; // 3.5MB to stay well under Claude's 5MB base64 limit
+const MAX_DIMENSION = 4000; // Stay within iOS canvas memory limits
+// Types Claude accepts natively — anything else needs converting to JPEG
+const CLAUDE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 function isImageFile(file: File): boolean {
   if (file.type.startsWith("image/")) return true;
@@ -22,7 +25,16 @@ function isImageFile(file: File): boolean {
 
 function compressImage(file: File): Promise<File> {
   return new Promise((resolve) => {
-    if (!isImageFile(file) || file.type === "image/gif") {
+    if (!isImageFile(file) || file.type === "application/pdf") {
+      resolve(file);
+      return;
+    }
+    if (file.type === "image/gif") {
+      resolve(file);
+      return;
+    }
+    const needsConversion = !CLAUDE_IMAGE_TYPES.has(file.type) || !file.type || file.size > MAX_IMAGE_SIZE;
+    if (!needsConversion) {
       resolve(file);
       return;
     }
@@ -30,29 +42,31 @@ function compressImage(file: File): Promise<File> {
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
-      const isHeic = file.type === "image/heic" || file.type === "image/heif" || /\.heic$/i.test(file.name) || /\.heif$/i.test(file.name);
-      const needsConversion = isHeic || !file.type || file.size > MAX_IMAGE_SIZE;
-      if (!needsConversion) {
-        resolve(file);
-        return;
+      try {
+        const canvas = document.createElement("canvas");
+        // Cap dimensions to avoid exceeding iOS canvas memory limits
+        const scaleDim = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
+        const scaleSize = file.size > MAX_IMAGE_SIZE ? Math.min(1, Math.sqrt(MAX_IMAGE_SIZE / file.size)) : 1;
+        const scale = Math.min(scaleDim, scaleSize);
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { resolve(file); return; } // iOS refused canvas context — send original
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
+            } else {
+              resolve(file);
+            }
+          },
+          "image/jpeg",
+          0.85
+        );
+      } catch {
+        resolve(file); // Canvas failed — send original and let server handle it
       }
-      const canvas = document.createElement("canvas");
-      const scale = file.size > MAX_IMAGE_SIZE ? Math.min(1, Math.sqrt(MAX_IMAGE_SIZE / file.size)) : 1;
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
-          } else {
-            resolve(file);
-          }
-        },
-        "image/jpeg",
-        0.85
-      );
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
