@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import MenuUpload from "@/components/MenuUpload";
 import MenuResults from "@/components/MenuResults";
 import LoadingState from "@/components/LoadingState";
-import RestaurantSearch from "@/components/RestaurantSearch";
 import type { WinePairing } from "@/lib/claude";
 import type { RecipeResult } from "@/lib/claude-recipe";
 
@@ -134,8 +133,6 @@ export default function Home() {
   const [maxPrice, setMaxPrice] = useState(SLIDER_MAX);
   const [courses, setCourses] = useState<string[]>(["mains"]);
 
-  // Restaurant search state
-  const [searchedRestaurant, setSearchedRestaurant] = useState<{ name: string; website: string | null } | null>(null);
   const [menuUploadKey, setMenuUploadKey] = useState(0);
 
   const [userCurrency, setUserCurrency] = useState("USD");
@@ -150,8 +147,6 @@ export default function Home() {
 
   const hasFoodMenu = foodFiles.length > 0 || !!foodUrl.trim();
   const hasWineMenu = wineFiles.length > 0 || !!wineUrl.trim();
-  const showPriceSlider = hasWineMenu || !!searchedRestaurant;
-  const estimatePrices = !!searchedRestaurant && !hasWineMenu;
 
   const handleSubmit = async () => {
     setState("uploading");
@@ -170,10 +165,6 @@ export default function Home() {
         if (hasWineMenu) {
           formData.append("minPrice", String(minPrice));
           if (!maxIsUnlimited) formData.append("maxPrice", String(maxPrice));
-        } else if (estimatePrices) {
-          formData.append("estimatePrices", "true");
-          formData.append("minPrice", String(minPrice));
-          if (!maxIsUnlimited) formData.append("maxPrice", String(maxPrice));
         }
 
         response = await fetch("/api/pair", {
@@ -190,7 +181,6 @@ export default function Home() {
             currency: userCurrency,
             courses,
             ...(hasWineMenu ? { minPrice, ...(maxIsUnlimited ? {} : { maxPrice }) } : {}),
-            ...(estimatePrices ? { estimatePrices: true, minPrice, ...(maxIsUnlimited ? {} : { maxPrice }) } : {}),
           }),
         });
       }
@@ -215,19 +205,6 @@ export default function Home() {
     setPairings([]);
     setRestaurantName(null);
     setError("");
-    setSearchedRestaurant(null);
-    setFoodUrl("");
-    setMenuUploadKey((k) => k + 1);
-  };
-
-  const handleRestaurantSelect = (name: string, website: string | null) => {
-    setSearchedRestaurant({ name, website });
-    setFoodUrl(website || "");
-    setMenuUploadKey((k) => k + 1);
-  };
-
-  const handleRestaurantClear = () => {
-    setSearchedRestaurant(null);
     setFoodUrl("");
     setMenuUploadKey((k) => k + 1);
   };
@@ -373,40 +350,14 @@ export default function Home() {
 
           {(state === "idle" || state === "error") && (
             <form onSubmit={(e) => { e.preventDefault(); if (hasFoodMenu) handleSubmit(); }}>
-              {/* Restaurant search */}
-              <div className="mx-auto max-w-3xl mb-4">
-                <RestaurantSearch
-                  onSelect={handleRestaurantSelect}
-                  onClear={handleRestaurantClear}
-                />
-                {searchedRestaurant && (
-                  <div className={[
-                    "mt-2 flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold",
-                    searchedRestaurant.website
-                      ? "bg-green-50 border border-green-200 text-green-800"
-                      : "bg-amber-50 border border-amber-200 text-amber-800",
-                  ].join(" ")}>
-                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      {searchedRestaurant.website
-                        ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      }
-                    </svg>
-                    {searchedRestaurant.website
-                      ? `Found ${searchedRestaurant.name}'s website — menu loaded below`
-                      : `No website found for ${searchedRestaurant.name} — please upload the menu below`
-                    }
-                  </div>
-                )}
-                {state === "error" && error && (
-                  <div className="mt-3 flex items-start gap-3 rounded-xl border-2 border-red-400 bg-red-50 px-4 py-3 shadow-sm">
-                    <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                    <p className="text-sm font-bold text-red-800">{error}</p>
-                  </div>
-                )}
-              </div>
+              {state === "error" && error && (
+                <div className="mx-auto max-w-3xl mb-4 flex items-start gap-3 rounded-xl border-2 border-red-400 bg-red-50 px-4 py-3 shadow-sm">
+                  <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-sm font-bold text-red-800">{error}</p>
+                </div>
+              )}
 
               <div className="mx-auto max-w-3xl grid gap-6 sm:grid-cols-2">
                 <MenuUpload
@@ -466,7 +417,7 @@ export default function Home() {
               </div>
 
               {/* Price range slider */}
-              {showPriceSlider && (
+              {hasWineMenu && (
                 <div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-wine-dark/60 p-5">
                   <p className="text-sm font-bold text-white mb-3 text-center">Wine Price Range (Bottle)</p>
                   <div className="flex items-center gap-3">
