@@ -13,8 +13,8 @@ interface MenuUploadProps {
 }
 
 const MAX_IMAGE_SIZE = 3.5 * 1024 * 1024; // 3.5MB to stay well under Claude's 5MB base64 limit
-const MAX_DIMENSION = 4000; // Stay within iOS canvas memory limits
-// Types Claude accepts natively — anything else needs converting to JPEG
+const MAX_DIMENSION = 2048; // Cap canvas size — 4000px causes OOM on older iPhones
+// Types Claude accepts natively — anything else must be converted to JPEG
 const CLAUDE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 function isImageFile(file: File): boolean {
@@ -23,7 +23,8 @@ function isImageFile(file: File): boolean {
   return ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "bmp", "tiff", "tif"].includes(ext);
 }
 
-function compressImage(file: File): Promise<File> {
+// Returns null if the file cannot be converted to a Claude-compatible format
+function compressImage(file: File): Promise<File | null> {
   return new Promise((resolve) => {
     if (!isImageFile(file) || file.type === "application/pdf") {
       resolve(file);
@@ -33,46 +34,51 @@ function compressImage(file: File): Promise<File> {
       resolve(file);
       return;
     }
-    const needsConversion = !CLAUDE_IMAGE_TYPES.has(file.type) || !file.type || file.size > MAX_IMAGE_SIZE;
+    const isNativeType = CLAUDE_IMAGE_TYPES.has(file.type);
+    const needsConversion = !isNativeType || !file.type || file.size > MAX_IMAGE_SIZE;
     if (!needsConversion) {
       resolve(file);
       return;
     }
     const img = new Image();
-    const url = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(file);
     img.onload = () => {
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(objectUrl);
       try {
         const canvas = document.createElement("canvas");
-        // Cap dimensions to avoid exceeding iOS canvas memory limits
         const scaleDim = Math.min(MAX_DIMENSION / img.width, MAX_DIMENSION / img.height, 1);
         const scaleSize = file.size > MAX_IMAGE_SIZE ? Math.min(1, Math.sqrt(MAX_IMAGE_SIZE / file.size)) : 1;
         const scale = Math.min(scaleDim, scaleSize);
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         const ctx = canvas.getContext("2d");
-        if (!ctx) { resolve(file); return; } // iOS refused canvas context — send original
+        if (!ctx) {
+          // iOS refused canvas context (memory pressure) — only safe to send if Claude supports the format natively
+          resolve(isNativeType ? file : null);
+          return;
+        }
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(
           (blob) => {
             if (blob) {
               resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpg"), { type: "image/jpeg" }));
             } else {
-              resolve(file);
+              resolve(isNativeType ? file : null);
             }
           },
           "image/jpeg",
           0.85
         );
       } catch {
-        resolve(file); // Canvas failed — send original and let server handle it
+        resolve(isNativeType ? file : null);
       }
     };
     img.onerror = () => {
-      URL.revokeObjectURL(url);
-      resolve(file);
+      URL.revokeObjectURL(objectUrl);
+      // Browser cannot decode this format — only safe to pass through if Claude supports it natively
+      resolve(isNativeType ? file : null);
     };
-    img.src = url;
+    img.src = objectUrl;
   });
 }
 
@@ -91,16 +97,28 @@ export default function MenuUpload({
     initialFiles.map((f) => (f.type.startsWith("image/") ? URL.createObjectURL(f) : null))
   );
   const [menuUrl, setMenuUrl] = useState(initialUrl);
+  const [conversionError, setConversionError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const addFiles = useCallback(
     async (newFiles: File[]) => {
-      const compressed = await Promise.all(newFiles.map(compressImage));
-      const newPreviews = compressed.map((f) =>
+      setConversionError(null);
+      const results = await Promise.all(newFiles.map(compressImage));
+      const failedCount = results.filter((f) => f === null).length;
+      const valid = results.filter((f): f is File => f !== null);
+
+      if (failedCount > 0) {
+        setConversionError(
+          `${failedCount} file${failedCount > 1 ? "s" : ""} could not be processed. Please use JPEG, PNG, or WebP.`
+        );
+      }
+      if (valid.length === 0) return;
+
+      const newPreviews = valid.map((f) =>
         f.type.startsWith("image/") ? URL.createObjectURL(f) : null
       );
       setSelectedFiles((prev) => {
-        const updated = [...prev, ...compressed];
+        const updated = [...prev, ...valid];
         onFilesChange(updated);
         return updated;
       });
@@ -206,6 +224,7 @@ export default function MenuUpload({
                         src={previews[i]!}
                         alt=""
                         className="h-8 w-8 rounded object-cover flex-shrink-0"
+                        onError={() => setPreviews((prev) => prev.map((p, idx) => idx === i ? null : p))}
                       />
                     ) : (
                       <svg className="w-5 h-5 text-wine flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,6 +278,10 @@ export default function MenuUpload({
             </div>
           )}
         </div>
+
+        {conversionError && (
+          <p className="mt-2 text-xs font-semibold text-red-300">{conversionError}</p>
+        )}
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-3">
