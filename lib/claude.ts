@@ -87,8 +87,7 @@ Return your response as a JSON object (no markdown, no code fences, raw JSON onl
     "vivino": "number 1.0-5.0 if specific bottle recommended, -1 if unknown — omit if no wine menu",
     "retail": "Retail price with currency symbol if specific bottle, 'Not found' if unknown — omit if no wine menu",
     "glassPrice": "Per-glass price from wine menu with symbol — omit if not listed",
-    "bottlePrice": "Per-bottle price from wine menu with symbol — omit if not listed",
-    "outOfRange": true (only include this field when true — omit when false)
+    "bottlePrice": "Per-bottle price from wine menu with symbol — omit if not listed"
   }
   ]
 }
@@ -127,11 +126,12 @@ A wine menu has also been provided. You MUST ONLY recommend wines that appear on
 function buildPriceRangePrompt(minPrice: number | undefined, maxPrice: number | undefined, userCurrency: string): string {
   if (minPrice == null && maxPrice == null) return "";
   const conversionNote = `The user's price range is in ${userCurrency}. If the wine menu uses a DIFFERENT currency, you MUST convert the user's price range to the menu's currency using approximate exchange rates before filtering. Apply the filter using the converted values in the menu's currency.`;
+  const outOfRangeRule = `In your JSON, add "outOfRange": true ONLY for dishes where no wine on the menu fits within the price range — omit this field entirely for all other dishes.`;
   if (minPrice != null && maxPrice != null) {
-    return `\n\nThe user has set a preferred BOTTLE price range of ${minPrice} to ${maxPrice} ${userCurrency}. ${conversionNote} Filter the wine list by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price within the converted range and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price within this range for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
+    return `\n\nThe user has set a preferred BOTTLE price range of ${minPrice} to ${maxPrice} ${userCurrency}. ${conversionNote} Filter the wine list by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price within the converted range. ONLY if there are absolutely NO wines on the menu with a bottle price within this range for a dish, recommend the closest-priced wine instead. ${outOfRangeRule}`;
   }
   if (minPrice != null) {
-    return `\n\nThe user has set a minimum BOTTLE price of ${minPrice} ${userCurrency} with no upper limit. ${conversionNote} Filter by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price at or above the converted value and set "outsidePriceRange" to false. ONLY if there are absolutely NO wines on the menu with a bottle price at or above this value for a dish, recommend the closest-priced wine and set "outsidePriceRange" to true.`;
+    return `\n\nThe user has set a minimum BOTTLE price of ${minPrice} ${userCurrency} with no upper limit. ${conversionNote} Filter by bottle price only (ignore glass prices for filtering). For each dish, pick the best pairing from wines with a bottle price at or above the converted value. ONLY if there are absolutely NO wines on the menu with a bottle price at or above this value for a dish, recommend the closest-priced wine instead. ${outOfRangeRule}`;
   }
   return "";
 }
