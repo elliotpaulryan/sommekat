@@ -353,6 +353,19 @@ function normalisePairing(p: any): WinePairing {
   };
 }
 
+// Without a wine list, wines are broad style suggestions — there is no real
+// bottle, so any Vivino rating, retail price or on-menu price the model returns
+// is meaningless. Null them out so the UI never renders empty/guessed values.
+function stripWineListOnlyFields(pairings: WinePairing[]): WinePairing[] {
+  return pairings.map((p) => ({
+    ...p,
+    vivinoRating: null,
+    retailPrice: null,
+    restaurantPriceGlass: null,
+    restaurantPriceBottle: null,
+  }));
+}
+
 function extractBalancedJSON(str: string, open: string, close: string): string {
   let depth = 0;
   let start = -1;
@@ -417,6 +430,9 @@ export async function getWinePairings(
   const courses = wineMenu?.courses || ["mains"];
   const systemPrompt = buildBasePrompt(courses);
 
+  const hasWineList =
+    (wineMenu?.wineMenuFiles?.length ?? 0) > 0 || !!wineMenu?.wineMenuUrl;
+
   // Variable instructions appended to user message
   let userInstructions = `- Detect the currency from the menu prices (look for currency symbols like $, £, €, or currency codes). Use the MENU's currency for all prices in your response, and set "menuCurrency" to the ISO currency code (e.g. "GBP", "EUR", "AUD"). If no currency can be detected from the menu, fall back to ${currency} and set "menuCurrency" to "${currency}".`;
 
@@ -464,7 +480,9 @@ export async function getWinePairings(
   const text =
     message.content[0].type === "text" ? message.content[0].text : "";
 
-  return parseResponse(text);
+  const parsed = parseResponse(text);
+  if (!hasWineList) parsed.pairings = stripWineListOnlyFields(parsed.pairings);
+  return parsed;
 }
 
 export async function getWinePairingsFromUrl(
@@ -477,6 +495,7 @@ export async function getWinePairingsFromUrl(
 ): Promise<ParsedResponse> {
   const foodBlock = await fetchUrlAsContentBlock(url);
 
+  const hasWineList = !!wineUrl;
   const contentBlocks: ContentBlockParam[] = [foodBlock];
   const fallbackCurrency = currency || "USD";
   const systemPrompt = buildBasePrompt(courses || ["mains"]);
@@ -514,5 +533,7 @@ export async function getWinePairingsFromUrl(
   const text =
     message.content[0].type === "text" ? message.content[0].text : "";
 
-  return parseResponse(text);
+  const parsed = parseResponse(text);
+  if (!hasWineList) parsed.pairings = stripWineListOnlyFields(parsed.pairings);
+  return parsed;
 }

@@ -123,7 +123,6 @@ export default function Home() {
   const [state, setState] = useState<AppState>("idle");
   const [pairings, setPairings] = useState<WinePairing[]>([]);
   const [restaurantName, setRestaurantName] = useState<string | null>(null);
-  const [resultsHadWineMenu, setResultsHadWineMenu] = useState(false);
   const [error, setError] = useState<string>("");
 
   const [foodFiles, setFoodFiles] = useState<File[]>([]);
@@ -194,7 +193,6 @@ export default function Home() {
 
       setPairings(data.pairings);
       setRestaurantName(data.restaurantName || null);
-      setResultsHadWineMenu(hasWineMenu);
       setState("results");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -487,7 +485,7 @@ export default function Home() {
           {state === "uploading" && <LoadingState />}
 
           {state === "results" && (
-            <MenuResults pairings={pairings} restaurantName={restaurantName} hasWineList={resultsHadWineMenu} onReset={handleReset} />
+            <MenuResults pairings={pairings} restaurantName={restaurantName} onReset={handleReset} />
           )}
         </div>
       </div>
