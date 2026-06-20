@@ -5,6 +5,7 @@ import type { WinePairing } from "@/lib/claude";
 interface MenuResultsProps {
   pairings: WinePairing[];
   restaurantName: string | null;
+  hasWineList: boolean;
   onReset: () => void;
 }
 
@@ -125,7 +126,7 @@ function buildCourseSections(items: WinePairing[]) {
     .filter((g) => g.items.length > 0);
 }
 
-function PairingCard({ pairing }: { pairing: WinePairing }) {
+function PairingCard({ pairing, hasWineList }: { pairing: WinePairing; hasWineList: boolean }) {
   return (
     <div className="group rounded-lg border-2 border-[#722F37] bg-white shadow-sm transition-all hover:shadow-md hover:border-[#5a252c] overflow-hidden">
       <div className="grid sm:grid-cols-2">
@@ -151,7 +152,7 @@ function PairingCard({ pairing }: { pairing: WinePairing }) {
           {pairing.region && (
             <p className="text-sm text-stone-500 font-medium mt-0.5">{pairing.region}</p>
           )}
-          {(pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
+          {hasWineList && (pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
             <span className="inline-flex items-center gap-1 rounded-full bg-wine text-white px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide mt-1">
               On Menu
             </span>
@@ -171,7 +172,7 @@ function PairingCard({ pairing }: { pairing: WinePairing }) {
             )}
           </div>
 
-          {(pairing.vivinoRating != null || pairing.restaurantPriceGlass || pairing.restaurantPriceBottle || pairing.retailPrice) && (
+          {hasWineList && (pairing.vivinoRating != null || pairing.restaurantPriceGlass || pairing.restaurantPriceBottle || pairing.retailPrice) && (
             <div className="mt-3 space-y-2">
               {(pairing.restaurantPriceGlass || pairing.restaurantPriceBottle) && (
                 pairing.restaurantPriceGlass ? (
@@ -234,7 +235,7 @@ function PairingCard({ pairing }: { pairing: WinePairing }) {
   );
 }
 
-function CourseSectionBlock({ items, label, showLabel }: { items: WinePairing[]; label: string; showLabel: boolean }) {
+function CourseSectionBlock({ items, label, showLabel, hasWineList }: { items: WinePairing[]; label: string; showLabel: boolean; hasWineList: boolean }) {
   return (
     <div className="mb-4">
       {showLabel && (
@@ -242,14 +243,14 @@ function CourseSectionBlock({ items, label, showLabel }: { items: WinePairing[];
       )}
       <div className="space-y-2 rounded-xl bg-wine-dark/60 p-1.5 sm:p-2">
         {items.map((pairing, index) => (
-          <PairingCard key={index} pairing={pairing} />
+          <PairingCard key={index} pairing={pairing} hasWineList={hasWineList} />
         ))}
       </div>
     </div>
   );
 }
 
-export default function MenuResults({ pairings, restaurantName, onReset }: MenuResultsProps) {
+export default function MenuResults({ pairings, restaurantName, hasWineList, onReset }: MenuResultsProps) {
   // Detect unique menu sections (e.g. Breakfast, Lunch, Dinner)
   const allSectionNames = [...new Set(pairings.map((p) => p.menuSection).filter((s): s is string => !!s))];
   const sortedSectionNames = allSectionNames.sort((a, b) => menuSectionOrder(a) - menuSectionOrder(b));
@@ -321,7 +322,7 @@ export default function MenuResults({ pairings, restaurantName, onReset }: MenuR
                   <span className="text-sm font-bold text-red-900/60">{sectionPairings.length} dishes</span>
                 </h3>
                 {courses.map((c) => (
-                  <CourseSectionBlock key={c.key} items={c.items} label={c.label} showLabel={courses.length > 1} />
+                  <CourseSectionBlock key={c.key} items={c.items} label={c.label} showLabel={courses.length > 1} hasWineList={hasWineList} />
                 ))}
               </div>
             );
@@ -331,7 +332,7 @@ export default function MenuResults({ pairings, restaurantName, onReset }: MenuR
             <div className="mb-10">
               <h3 className="text-xl font-extrabold text-red-900 mb-3">Other</h3>
               {buildCourseSections(pairings.filter((p) => !p.menuSection)).map((c) => (
-                <CourseSectionBlock key={c.key} items={c.items} label={c.label} showLabel={false} />
+                <CourseSectionBlock key={c.key} items={c.items} label={c.label} showLabel={false} hasWineList={hasWineList} />
               ))}
             </div>
           )}
@@ -344,6 +345,7 @@ export default function MenuResults({ pairings, restaurantName, onReset }: MenuR
             items={section.items}
             label={section.label}
             showLabel={courseSections.length > 1}
+            hasWineList={hasWineList}
           />
         ))
       )}
